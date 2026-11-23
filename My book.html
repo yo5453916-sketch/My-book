@@ -1,0 +1,2931 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>مكتبتي</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap');
+
+  :root {
+    --blue-dark: #0a2540;
+    --blue-mid: #1565c0;
+    --blue-bright: #1e88e5;
+    --blue-light: #e3f2fd;
+    --orange: #f57c00;
+    --orange-light: #ff9800;
+    --orange-glow: #fff3e0;
+    --white: #ffffff;
+    --gray-1: #f8fafd;
+    --gray-2: #e8edf5;
+    --gray-3: #b0bec5;
+    --gray-4: #607d8b;
+    --text-dark: #0d1b2a;
+    --sidebar-w: 280px;
+    --topbar-h: 64px;
+    --radius: 14px;
+    --shadow: 0 4px 24px rgba(10,37,64,0.13);
+    --shadow-sm: 0 2px 8px rgba(10,37,64,0.09);
+    --transition: 0.3s cubic-bezier(.4,0,.2,1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Tajawal', sans-serif; background: var(--gray-1); color: var(--text-dark); min-height: 100vh; overflow-x: hidden; }
+
+  /* TOPBAR */
+  .topbar {
+    position: fixed; top: 0; right: 0; left: 0; z-index: 100;
+    height: var(--topbar-h);
+    background: linear-gradient(90deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+    display: flex; align-items: center; padding: 0 16px; gap: 12px;
+    box-shadow: 0 2px 16px rgba(10,37,64,0.22);
+  }
+  .topbar-logo { font-size: 20px; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 7px; }
+  .topbar-logo span { color: var(--orange-light); }
+  .topbar-actions { margin-right: auto; display: flex; gap: 8px; }
+  .btn-icon {
+    width: 40px; height: 40px; border-radius: 10px; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+    background: rgba(255,255,255,0.13); color: #fff; transition: var(--transition);
+  }
+  .btn-icon:hover { background: rgba(255,255,255,0.23); }
+
+  /* SIDEBAR */
+  .sidebar-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(10,37,64,0.5); opacity: 0; pointer-events: none; transition: var(--transition);
+  }
+  .sidebar-overlay.open { opacity: 1; pointer-events: all; }
+  .sidebar {
+    position: fixed; top: 0; right: calc(-1 * var(--sidebar-w) - 20px); z-index: 201;
+    width: var(--sidebar-w); height: 100vh;
+    background: var(--blue-dark); display: flex; flex-direction: column;
+    transition: right var(--transition); box-shadow: -4px 0 30px rgba(0,0,0,0.3);
+  }
+  .sidebar.open { right: 0; }
+  .sidebar-header {
+    padding: 20px 16px 14px; border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .sidebar-title { color: #fff; font-weight: 700; font-size: 16px; }
+  .sidebar-close {
+    background: rgba(255,255,255,0.12); border: none; color: #fff;
+    width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center; transition: var(--transition);
+  }
+  .sidebar-close:hover { background: var(--orange); }
+  .sidebar-scroll { flex: 1; overflow-y: auto; }
+  .sidebar-section { padding: 10px 8px 4px; }
+  .sidebar-label { color: var(--gray-3); font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 0 8px 6px; display: block; }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-radius: 10px; cursor: pointer; color: rgba(255,255,255,0.72);
+    font-size: 14px; font-weight: 500; transition: var(--transition);
+  }
+  .sidebar-item:hover, .sidebar-item.active { background: rgba(255,152,0,0.16); color: var(--orange-light); }
+  .sidebar-item .icon { font-size: 17px; width: 22px; text-align: center; }
+  .sidebar-add {
+    margin: 6px 10px 12px; padding: 9px 12px; border-radius: 10px;
+    background: rgba(255,152,0,0.12); border: 1.5px dashed rgba(255,152,0,0.4);
+    color: var(--orange-light); font-size: 13px; font-weight: 600; cursor: pointer;
+    text-align: center; transition: var(--transition);
+  }
+  .sidebar-add:hover { background: rgba(255,152,0,0.22); }
+  .storage-box { padding: 4px 8px 8px; }
+  .storage-bar { width: 100%; height: 8px; border-radius: 5px; background: rgba(255,255,255,0.12); overflow: hidden; }
+  .storage-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue-bright), var(--orange-light)); transition: width 0.4s ease, background 0.4s ease; }
+  .storage-bar-fill.warn { background: linear-gradient(90deg, var(--orange), #e53935); }
+  .storage-text { color: var(--gray-3); font-size: 12px; margin-top: 6px; line-height: 1.6; }
+  .storage-persist { font-size: 11px; margin-top: 4px; padding: 4px 8px; border-radius: 6px; display: inline-block; }
+  .storage-persist.ok   { background: rgba(76,175,80,0.18); color: #81c784; }
+  .storage-persist.bad  { background: rgba(229,57,53,0.18); color: #ef9a9a; }
+
+  /* MAIN */
+  .main { margin-top: var(--topbar-h); padding: 20px 16px; min-height: calc(100vh - var(--topbar-h)); }
+
+  /* TABS */
+  .tab-bar {
+    display: flex; gap: 6px; margin-bottom: 18px; background: #fff;
+    border-radius: var(--radius); padding: 5px; box-shadow: var(--shadow-sm);
+  }
+  .tab-btn {
+    flex: 1; padding: 10px; border: none; border-radius: 10px;
+    font-family: 'Tajawal', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: var(--transition); color: var(--gray-4); background: transparent;
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, var(--blue-mid), var(--blue-bright));
+    color: #fff; box-shadow: 0 2px 12px rgba(21,101,192,0.3);
+  }
+
+  /* ACTION BUTTONS */
+  .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .action-btn {
+    padding: 14px 8px; border-radius: var(--radius); border: none; cursor: pointer;
+    font-family: 'Tajawal', sans-serif; font-size: 14px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: var(--transition); box-shadow: var(--shadow-sm);
+  }
+  .action-btn.upload { background: linear-gradient(135deg, var(--blue-mid), var(--blue-bright)); color: #fff; }
+  .action-btn.upload:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(21,101,192,0.35); }
+  .action-btn.convert { background: linear-gradient(135deg, var(--orange), var(--orange-light)); color: #fff; }
+  .action-btn.convert:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,124,0,0.35); }
+  .action-btn.full-width { grid-column: 1 / -1; }
+
+  /* SECTION HEADER */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .section-title { font-size: 16px; font-weight: 800; color: var(--blue-dark); }
+  .section-count { background: var(--blue-light); color: var(--blue-mid); border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 700; }
+
+  /* BOOKS GRID */
+  .books-grid { display: flex; flex-direction: column; gap: 11px; }
+  .book-card {
+    background: #fff; border-radius: var(--radius); padding: 13px 14px;
+    display: flex; align-items: center; gap: 13px;
+    box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition);
+    border: 2px solid transparent;
+  }
+  .book-card:hover { border-color: var(--blue-bright); transform: translateX(-3px); }
+  .book-cover {
+    width: 54px; height: 70px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; position: relative; overflow: hidden;
+  }
+  .cover-pdf   { background: linear-gradient(135deg,#ef5350,#c62828); }
+  .cover-word  { background: linear-gradient(135deg,#1565c0,#1976d2); }
+  .cover-excel { background: linear-gradient(135deg,#2e7d32,#43a047); }
+  .cover-audio { background: linear-gradient(135deg,var(--orange),#ffa726); }
+  .cover-other { background: linear-gradient(135deg,#6a1b9a,#8e24aa); }
+  .cover-badge {
+    position: absolute; bottom: 2px; right: 2px;
+    background: rgba(0,0,0,0.5); color: #fff;
+    font-size: 7px; font-weight: 800; padding: 2px 4px; border-radius: 4px;
+  }
+  .book-info { flex: 1; min-width: 0; }
+  .book-title {
+    font-size: 15px; font-weight: 800; color: var(--blue-dark);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;
+  }
+  .book-meta { font-size: 11px; color: var(--gray-4); display: flex; gap: 8px; flex-wrap: wrap; }
+  .book-progress { margin-top: 6px; }
+  .progress-bar { height: 4px; background: var(--gray-2); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--orange),var(--orange-light)); border-radius: 99px; }
+  .progress-label { font-size: 10px; color: var(--gray-4); margin-top: 2px; }
+  .book-actions { display: flex; flex-direction: column; gap: 5px; }
+  .book-btn {
+    width: 32px; height: 32px; border-radius: 8px; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 14px; transition: var(--transition);
+  }
+  .btn-read { background: var(--blue-light); color: var(--blue-mid); }
+  .btn-read:hover { background: var(--blue-mid); color: #fff; }
+  .btn-more { background: var(--gray-2); color: var(--gray-4); }
+  .btn-more:hover { background: var(--orange-glow); color: var(--orange); }
+  .btn-fix { background: #f3e5f5; color: #8e24aa; }
+  .btn-fix:hover { background: #8e24aa; color: #fff; }
+  .fixed-badge { color: #8e24aa; }
+
+  /* AI FIX PROGRESS WIDGET */
+  .fix-progress-widget {
+    position: fixed; top: 72px; left: 12px; z-index: 150;
+    display: none; align-items: center; gap: 10px;
+    background: #fff; border-radius: 14px; padding: 10px 12px;
+    box-shadow: var(--shadow); max-width: 240px; width: calc(100vw - 100px);
+  }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 50px 20px; color: var(--gray-4); }
+  .empty-state .icon { font-size: 54px; margin-bottom: 12px; }
+  .empty-state h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--blue-dark); }
+  .empty-state p { font-size: 13px; line-height: 1.7; }
+
+  /* UPLOADING INDICATOR */
+  .uploading-card {
+    background: #fff; border-radius: var(--radius); padding: 14px;
+    display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-sm);
+    border: 2px solid var(--blue-light);
+  }
+  .uploading-spinner {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 3px solid var(--blue-light); border-top-color: var(--blue-mid);
+    animation: spin 0.8s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .uploading-name { font-size: 14px; font-weight: 600; color: var(--blue-dark); }
+  .uploading-sub { font-size: 12px; color: var(--gray-4); }
+
+  /* READER OVERLAY */
+  .reader-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: #fff; display: none; flex-direction: column;
+  }
+  .reader-overlay.open { display: flex; }
+  .reader-topbar {
+    height: 56px; background: var(--blue-dark); display: flex; align-items: center;
+    padding: 0 12px; gap: 10px; flex-shrink: 0;
+  }
+  .reader-title {
+    flex: 1; color: #fff; font-weight: 700; font-size: 14px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center;
+  }
+  .reader-toolbar {
+    background: var(--gray-1); border-bottom: 1px solid var(--gray-2);
+    padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 7px; align-items: center; flex-shrink: 0;
+    overflow-x: auto;
+  }
+  .toolbar-group { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+  .toolbar-sep { width: 1px; height: 26px; background: var(--gray-2); margin: 0 2px; flex-shrink: 0; }
+  .tool-btn {
+    padding: 5px 10px; border-radius: 8px; border: 1.5px solid var(--gray-2);
+    background: #fff; cursor: pointer; font-family: 'Tajawal', sans-serif;
+    font-size: 12px; font-weight: 600; color: var(--blue-dark); transition: var(--transition);
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .tool-btn:hover { border-color: var(--blue-bright); color: var(--blue-bright); }
+  .tool-select {
+    padding: 5px 8px; border-radius: 8px; border: 1.5px solid var(--gray-2);
+    font-family: 'Tajawal', sans-serif; font-size: 12px; color: var(--blue-dark);
+    background: #fff; cursor: pointer; outline: none; flex-shrink: 0;
+  }
+  .tool-select:focus { border-color: var(--blue-bright); }
+  .font-sz-ctrl { display: flex; align-items: center; gap: 5px; }
+  .font-sz-val { font-size: 12px; font-weight: 700; color: var(--blue-dark); min-width: 26px; text-align: center; }
+  .font-sz-btn {
+    width: 26px; height: 26px; border-radius: 7px; border: 1.5px solid var(--gray-2);
+    background: #fff; cursor: pointer; font-size: 15px; font-weight: 800; color: var(--blue-dark);
+    display: flex; align-items: center; justify-content: center; transition: var(--transition); flex-shrink: 0;
+  }
+  .font-sz-btn:hover { background: var(--blue-mid); color: #fff; border-color: var(--blue-mid); }
+  .color-dot {
+    width: 20px; height: 20px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; transition: var(--transition); flex-shrink: 0;
+  }
+  .color-dot:hover, .color-dot.sel { border-color: var(--blue-dark); transform: scale(1.2); }
+  .reader-content { flex: 1; overflow-y: auto; padding: 24px 20px; line-height: 2; }
+  .reader-content p { margin-bottom: 14px; }
+  .reader-bottom {
+    height: 50px; background: var(--blue-dark); display: flex; align-items: center;
+    justify-content: space-between; padding: 0 14px; flex-shrink: 0;
+  }
+  .reader-info { color: rgba(255,255,255,0.6); font-size: 12px; }
+  .fullscreen-btn {
+    background: rgba(255,255,255,0.12); border: none; color: #fff; padding: 6px 14px;
+    border-radius: 8px; cursor: pointer; font-family: 'Tajawal', sans-serif;
+    font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 5px; transition: var(--transition);
+  }
+  .fullscreen-btn:hover { background: var(--orange); }
+
+  /* AUDIO PLAYER */
+  .audio-player {
+    position: fixed; bottom: 0; right: 0; left: 0; z-index: 400;
+    background: var(--blue-dark); border-top: 2px solid var(--orange);
+    padding: 10px 16px 14px; transform: translateY(100%); transition: var(--transition);
+  }
+  .audio-player.open { transform: translateY(0); }
+  .audio-close {
+    position: absolute; top: 8px; left: 12px; background: none; border: none;
+    color: rgba(255,255,255,0.5); font-size: 18px; cursor: pointer; transition: var(--transition);
+  }
+  .audio-close:hover { color: var(--orange-light); }
+  .audio-name { color: #fff; font-size: 13px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+  .audio-controls { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 8px; }
+  .audio-btn { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 22px; cursor: pointer; transition: var(--transition); }
+  .audio-btn:hover { color: var(--orange-light); }
+  .audio-btn.play-btn { font-size: 38px; color: var(--orange-light); }
+  .audio-prog { display: flex; align-items: center; gap: 8px; }
+  .audio-time { color: rgba(255,255,255,0.5); font-size: 11px; min-width: 34px; }
+  .audio-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.2); border-radius: 99px; cursor: pointer; position: relative; }
+  .audio-bar-fill { height: 100%; background: var(--orange-light); border-radius: 99px; width: 0; pointer-events: none; }
+  .audio-extra { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+  .audio-mode-btn {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.75);
+    font-family: 'Tajawal', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer;
+    padding: 7px 12px; border-radius: 99px; display: flex; align-items: center; gap: 5px; transition: var(--transition);
+  }
+  .audio-mode-btn:hover { background: rgba(255,255,255,0.18); }
+  .audio-mode-btn.active { background: rgba(255,152,0,0.22); border-color: var(--orange-light); color: var(--orange-light); }
+
+  /* MODALS */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 600; background: rgba(10,37,64,0.55);
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 20px 20px 0 0; width: 100%; padding: 18px 16px 28px;
+    animation: slideUp 0.28s ease;
+  }
+  .modal-center { align-items: center; }
+  .modal-center .modal { border-radius: 16px; width: calc(100% - 32px); margin-bottom: auto; }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-handle { width: 38px; height: 4px; background: var(--gray-2); border-radius: 99px; margin: 0 auto 14px; }
+  .modal-title { font-size: 16px; font-weight: 800; color: var(--blue-dark); margin-bottom: 12px; }
+  .modal-item {
+    display: flex; align-items: center; gap: 11px; padding: 11px 8px; border-radius: 10px;
+    cursor: pointer; transition: var(--transition); font-size: 14px; font-weight: 600; color: var(--text-dark);
+  }
+  .modal-item:hover { background: var(--gray-1); color: var(--blue-mid); }
+  .modal-item .icon { font-size: 18px; width: 26px; text-align: center; }
+  .modal-sep { height: 1px; background: var(--gray-2); margin: 5px 0; }
+  .modal-item.danger { color: #e53935; }
+  .modal-item.danger:hover { background: #fff5f5; }
+  .input-field {
+    width: 100%; padding: 11px 13px; border-radius: 10px;
+    border: 2px solid var(--gray-2); font-family: 'Tajawal', sans-serif;
+    font-size: 14px; color: var(--blue-dark); outline: none; margin-bottom: 10px; transition: var(--transition);
+  }
+  .input-field:focus { border-color: var(--blue-bright); }
+  .btn-primary {
+    width: 100%; padding: 12px; background: linear-gradient(135deg,var(--blue-mid),var(--blue-bright));
+    color: #fff; border: none; border-radius: 10px; font-family: 'Tajawal', sans-serif;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .convert-list { max-height: 220px; overflow-y: auto; margin-bottom: 12px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--blue-dark); color: #fff; padding: 10px 20px; border-radius: 30px;
+    font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.32s; z-index: 800;
+    white-space: nowrap; pointer-events: none; max-width: 90vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  #fileInput, #audioInput { display: none; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--gray-2); border-radius: 99px; }
+#tabAudio,.tab-bar,#audioTab{display:none!important}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+<script>
+  if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Scheherazade+New:wght@400;700&family=Reem+Kufi&family=Lateef&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root[data-theme=green]{--blue-dark:#3f7d2c;--blue-mid:#5a9a3a;--blue-bright:#7cb342;--blue-light:#f1f8e9;--orange:#e08a00;--orange-light:#ffb300;--gray-1:#fbf8e6;--gray-2:#e6edc8;--text-dark:#1f2d17}
+:root[data-theme=purple]{--blue-dark:#4a1f6e;--blue-mid:#7b3fb0;--blue-bright:#9c5fd0;--blue-light:#f3e8fb;--gray-1:#faf5fd}
+:root[data-theme=brown]{--blue-dark:#4e342e;--blue-mid:#7a5548;--blue-bright:#a1735f;--blue-light:#efe6df;--gray-1:#f6efe6;--text-dark:#2b1d17}
+:root[data-theme=teal]{--blue-dark:#004d57;--blue-mid:#00838f;--blue-bright:#26a6b4;--blue-light:#e0f7fa;--gray-1:#f0fbfc}
+:root[data-theme=rose]{--blue-dark:#7a1f3d;--blue-mid:#ad2d58;--blue-bright:#d6477a;--blue-light:#fde7ef;--gray-1:#fff6f9}
+#readerOverlay{z-index:400!important}
+.ov{position:fixed;inset:0;z-index:300;background:var(--gray-1);display:none;flex-direction:column;font-family:Tajawal,sans-serif;color:var(--text-dark)}
+.ov.open{display:flex}.ov.top{z-index:500}
+.ov-h{background:var(--blue-mid);color:#fff;display:flex;align-items:center;gap:10px;padding:10px 14px;flex-shrink:0}
+.ov-h b{flex:1;font-size:16px}.ov-b{flex:1;overflow:auto;padding:12px}
+.ov input,.ov select{font-family:inherit;font-size:14px;padding:9px 10px;border-radius:10px;border:1.5px solid var(--gray-2);background:#fff;color:#222;width:100%}
+.ov input[type=color]{padding:2px;height:38px;width:60px}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chip{padding:16px 8px;border-radius:10px;color:#fff;text-align:center;font-weight:700;cursor:pointer;background:var(--blue-bright)}
+.chip:nth-child(4n+2),.chip:nth-child(4n+3){background:var(--blue-dark)}
+.li{padding:12px 6px;border-bottom:1px solid var(--gray-2);cursor:pointer;font-weight:600}
+.row{display:flex;gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap}.row label{min-width:90px;font-weight:700;font-size:13px}
+.btn{padding:10px 14px;border:none;border-radius:10px;background:var(--blue-mid);color:#fff;font-family:inherit;font-weight:700;cursor:pointer}
+.btn.l{background:var(--gray-2);color:var(--text-dark)}
+.th{width:44px;height:44px;border-radius:50%;border:3px solid transparent;cursor:pointer}.th.sel{border-color:#000}
+.sec{font-weight:900;margin:18px 0 6px;color:var(--blue-dark)}
+.olnav{display:flex;gap:6px;align-items:center;justify-content:center;margin-bottom:14px;position:sticky;top:0;background:inherit;padding:6px 0}
+@media (orientation:landscape){.reader-toolbar{flex-wrap:wrap}}
+</style>
+<style>
+#readerOverlay .reader-content{position:absolute;top:env(safe-area-inset-top,0);bottom:env(safe-area-inset-bottom,0);left:env(safe-area-inset-left,0);right:env(safe-area-inset-right,0)}
+#readerOverlay .reader-topbar{position:absolute;top:0;left:0;right:0;z-index:5}
+#readerOverlay .reader-toolbar{position:absolute;top:56px;left:0;right:0;z-index:5;overflow-x:auto}
+#readerOverlay .reader-bottom{position:absolute;bottom:0;left:0;right:0;z-index:5}
+#readerOverlay.imm .reader-topbar,#readerOverlay.imm .reader-toolbar,#readerOverlay.imm .reader-bottom,#readerOverlay.imm .olnav,#readerOverlay.imm .olx,#readerOverlay.imm .pdfbar{display:none!important}
+</style>
+</head>
+<body>
+
+<input type="file" id="fileInput" multiple accept="*/*">
+<input type="file" id="audioInput" multiple accept=".mp3,.mp4,.m4a,.wav,.ogg,.aac">
+<input type="file" id="importBackupInput" multiple accept=".json,.pdf,.doc,.docx,.xls,.xlsx,.txt,.epub,.mp3,.m4a,.mp4,.wav,.ogg,.aac" style="display:none">
+
+<!-- Sidebar overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-title">📂 القوائم</span>
+    <button class="sidebar-close" onclick="closeSidebar()">✕</button>
+  </div>
+  <div class="sidebar-scroll">
+    <div class="sidebar-section">
+      <span class="sidebar-label">الكتب</span>
+      <div class="sidebar-item active" onclick="filterBooks('all')"><span class="icon">📚</span> كل الكتب</div>
+      <div class="sidebar-item" onclick="filterBooks('history')"><span class="icon">🏛</span> تاريخ</div>
+      <div class="sidebar-item" onclick="filterBooks('poetry')"><span class="icon">📜</span> شعر</div>
+      <div class="sidebar-item" onclick="filterBooks('literature')"><span class="icon">📖</span> أدب</div>
+      <div class="sidebar-item" onclick="filterBooks('religion')"><span class="icon">☪️</span> دين</div>
+      <div class="sidebar-item" onclick="filterBooks('science')"><span class="icon">🔬</span> علوم</div>
+      <div id="customListsContainer"></div>
+    </div>
+    
+    <div class="sidebar-section">
+      <span class="sidebar-label">النسخ الاحتياطي</span>
+      <div class="sidebar-item" onclick="exportFullBackup()"><span class="icon">⬇️</span> تصدير نسخة احتياطية كاملة</div>
+      <div class="sidebar-item" onclick="document.getElementById('importBackupInput').click()"><span class="icon">⬆️</span> استيراد نسخة احتياطية</div>
+    </div>
+    <div class="sidebar-section">
+      <span class="sidebar-label">مساحة التخزين</span>
+      <div class="storage-box" id="storageBox">
+        <div class="storage-bar"><div class="storage-bar-fill" id="storageBarFill"></div></div>
+        <div class="storage-text" id="storageText">جارٍ الحساب...</div>
+        <div class="storage-persist" id="storagePersistBadge"></div>
+      </div>
+    </div>
+    <div class="sidebar-add" onclick="openAddListModal()">+ إنشاء قائمة جديدة</div>
+  </div>
+</div>
+
+<!-- Topbar -->
+<div class="topbar">
+  <button class="btn-icon" onclick="openSidebar()">☰</button>
+  <div class="topbar-logo">📚 مكتبتي<span>.</span></div>
+  <div class="topbar-actions">
+    <button class="btn-icon" onclick="openAiSettings()" title="تصحيح الكتب بالذكاء الاصطناعي">🤖</button>
+    <button class="btn-icon" onclick="openTelegramSettings()" title="نسخ احتياطي على تليجرام">☁️</button>
+    <button class="btn-icon" onclick="doSearch()" title="بحث">🔍</button>
+  </div>
+</div>
+
+<!-- AI Fix background progress widget -->
+<div class="fix-progress-widget" id="fixProgressWidget"></div>
+
+<!-- Main -->
+<div id="audioPlaylistsContainer" style="display:none"></div>
+<div class="main">
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabBooks" onclick="switchTab('books')">📚 الكتب</button>
+    <button class="tab-btn" id="tabAudio" onclick="switchTab('audio')">🎧 الصوتيات</button>
+  </div>
+
+  <!-- Books Tab -->
+  <div id="booksTab">
+    <div class="action-row">
+      <button class="action-btn upload" onclick="document.getElementById('fileInput').click()">
+        <span>⬆️</span> رفع كتاب
+      </button>
+    </div>
+    <div class="section-header">
+      <span class="section-title" id="sectionTitle">آخر الكتب</span>
+      <span class="section-count" id="bookCount">0 كتاب</span>
+    </div>
+    <div class="books-grid" id="booksGrid">
+      <div class="empty-state">
+        <div class="icon">📖</div>
+        <h3>مكتبتك فاضية</h3>
+        <p>اضغط على "رفع كتاب" عشان<br>تضيف كتبك وتبدأ القراءة</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Tab -->
+  <div id="audioTab" style="display:none">
+    <div class="action-row">
+      <button class="action-btn upload full-width" onclick="document.getElementById('audioInput').click()">
+        <span>⬆️</span> رفع ملفات صوتية (MP3 · M4A · MP4)
+      </button>
+    </div>
+    <div class="section-header">
+      <span class="section-title" id="audioSectionTitle">الصوتيات</span>
+      <span class="section-count" id="audioCount">0 ملف</span>
+    </div>
+    <div class="books-grid" id="audioGrid">
+      <div class="empty-state">
+        <div class="icon">🎵</div>
+        <h3>ما فيش ملفات صوتية</h3>
+        <p>اضغط "رفع ملفات صوتية"<br>لإضافة ملفاتك</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- READER -->
+<div class="reader-overlay" id="readerOverlay">
+  <div class="reader-topbar">
+    <button class="btn-icon" onclick="closeReader()">✕</button>
+    <span class="reader-title" id="readerTitle"></span>
+    <button class="btn-icon" onclick="openBookMenu()">⋮</button>
+  </div>
+  <div class="reader-toolbar" id="readerToolbar">
+    <!-- Font size -->
+    <div class="toolbar-group">
+      <div class="font-sz-ctrl">
+        <button class="font-sz-btn" onclick="chgFontSize(-2)">−</button>
+        <span class="font-sz-val" id="fontSzVal">18</span>
+        <button class="font-sz-btn" onclick="chgFontSize(2)">+</button>
+      </div>
+    </div>
+    <div class="toolbar-sep"></div>
+    <!-- Font family -->
+    <div class="toolbar-group">
+      <select class="tool-select" onchange="chgFontFamily(this.value)">
+        <option value="'Tajawal',sans-serif">تجوال</option>
+        <option value="'Reem Kufi',cursive">كوفي</option>
+        <option value="Georgia,serif">رقعة</option>
+        <option value="'Times New Roman',serif">نثر</option>
+        <option value="monospace">مونو</option>
+      </select>
+    </div>
+    <div class="toolbar-sep"></div>
+    <!-- Text color -->
+    <div class="toolbar-group" style="gap:4px">
+      <span style="font-size:11px;color:var(--gray-4);font-weight:700">نص</span>
+      <div class="color-dot sel" style="background:#0d1b2a" onclick="chgTextColor('#0d1b2a',this)"></div>
+      <div class="color-dot" style="background:#1565c0" onclick="chgTextColor('#1565c0',this)"></div>
+      <div class="color-dot" style="background:#c62828" onclick="chgTextColor('#c62828',this)"></div>
+      <div class="color-dot" style="background:#2e7d32" onclick="chgTextColor('#2e7d32',this)"></div>
+      <div class="color-dot" style="background:#6a1b9a" onclick="chgTextColor('#6a1b9a',this)"></div>
+      <div class="color-dot" style="background:#f57c00" onclick="chgTextColor('#f57c00',this)"></div>
+      <div class="color-dot" style="background:#00838f" onclick="chgTextColor('#00838f',this)"></div>
+      <div class="color-dot" style="background:#777" onclick="chgTextColor('#777',this)"></div>
+      <div class="color-dot" style="background:#efefef;border:1px solid #ccc" onclick="chgTextColor('#efefef',this)"></div>
+    </div>
+    <div class="toolbar-sep"></div>
+    <!-- BG color -->
+    <div class="toolbar-group" style="gap:4px">
+      <span style="font-size:11px;color:var(--gray-4);font-weight:700">خلفية</span>
+      <div class="color-dot sel" style="background:#fff;border:1.5px solid #ccc" onclick="chgBg('#fff',this)"></div>
+      <div class="color-dot" style="background:#fffde7" onclick="chgBg('#fffde7',this)"></div>
+      <div class="color-dot" style="background:#e8f5e9" onclick="chgBg('#e8f5e9',this)"></div>
+      <div class="color-dot" style="background:#1a1a2e" onclick="chgBg('#1a1a2e',this)"></div>
+      <div class="color-dot" style="background:#2d1b00" onclick="chgBg('#2d1b00',this)"></div>
+    </div>
+  </div>
+  <div class="reader-content" id="readerContent"></div>
+  <div class="reader-bottom">
+    <span class="reader-info" id="readerProg">0%</span>
+    <button class="fullscreen-btn" onclick="toggleFullscreen()" id="fsBtn">⛶ ملء الشاشة</button>
+  </div>
+</div>
+
+<!-- AUDIO PLAYER -->
+<div class="audio-player" id="audioPlayer">
+  <button class="audio-close" onclick="closeAudio()">✕</button>
+  <div class="audio-name" id="audioName">—</div>
+  <div class="audio-controls">
+    <button class="audio-btn" onclick="prevTrack()">⏮</button>
+    <button class="audio-btn" onclick="seekBy(-10)">⏪</button>
+    <button class="audio-btn play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+    <button class="audio-btn" onclick="seekBy(10)">⏩</button>
+    <button class="audio-btn" onclick="nextTrack()">⏭</button>
+  </div>
+  <div class="audio-prog">
+    <span class="audio-time" id="curTime">0:00</span>
+    <div class="audio-bar" id="audioBar" onclick="seekTo(event)">
+      <div class="audio-bar-fill" id="audioFill"></div>
+    </div>
+    <span class="audio-time" id="durTime">0:00</span>
+  </div>
+  <div class="audio-extra">
+    <button class="audio-mode-btn" id="audioModeBtn" onclick="toggleAudioMode()">🔁 كل المقاطع</button>
+    <button class="audio-mode-btn" id="audioTimerBtn" onclick="openSleepTimerModal()">⏰ مؤقت إيقاف</button>
+  </div>
+  <audio id="audioEl"
+    onended="onAudioEnded()"
+    ontimeupdate="onTimeUpdate()"
+    onloadedmetadata="onMetaLoaded()">
+  </audio>
+</div>
+
+<!-- Book options modal -->
+<div class="modal-overlay" id="bookMenuModal" onclick="closeBookMenu()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">خيارات الكتاب</div>
+    <div class="modal-item" onclick="fixActiveBook()"><span class="icon">🩹</span> تصحيح الكتاب بالذكاء الاصطناعي</div>
+    <div class="modal-item" id="restoreOriginalItem" style="display:none" onclick="restoreOriginalBook(activeBookId)"><span class="icon">↩️</span> استرجاع النسخة قبل التصحيح</div>
+    <div class="modal-sep"></div>
+    <div class="modal-item danger" onclick="deleteActive()"><span class="icon">🗑</span> حذف الكتاب</div>
+    <div class="modal-sep"></div>
+    <div class="modal-item" onclick="closeBookMenu()"><span class="icon">✕</span> إلغاء</div>
+  </div>
+</div>
+
+<!-- Convert modal -->
+<div class="modal-overlay modal-center" id="convertModal" onclick="closeConvertModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔄 تحويل كتاب لـ Word</div>
+    <p style="font-size:13px;color:var(--gray-4);margin-bottom:12px;line-height:1.7">اختار الكتاب اللي عايز تحوله وهيتحمل كملف Word.</p>
+    <div class="convert-list" id="convertList"></div>
+    <button class="btn-primary" onclick="closeConvertModal()">إغلاق</button>
+  </div>
+</div>
+
+<!-- Add list modal -->
+<div class="modal-overlay" id="addListModal" onclick="closeAddListModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📂 قائمة جديدة</div>
+    <input class="input-field" id="listNameInput" placeholder="اسم القائمة (مثال: روايات، دين، علوم)" type="text">
+    <button class="btn-primary" onclick="createList()">إنشاء</button>
+  </div>
+</div>
+
+<!-- Add audio playlist modal -->
+<div class="modal-overlay" id="addAudioListModal" onclick="closeAddAudioListModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🎧 قائمة صوتية جديدة</div>
+    <input class="input-field" id="audioListNameInput" placeholder="اسم القائمة (مثال: بودكاست، محاضرات، قرآن)" type="text">
+    <button class="btn-primary" onclick="createAudioPlaylist()">إنشاء</button>
+  </div>
+</div>
+
+<!-- Audio file options modal -->
+<div class="modal-overlay" id="audioOptionsModal" onclick="closeAudioOptions()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">خيارات الملف الصوتي</div>
+    <div style="font-size:12px;color:var(--gray-4);font-weight:700;padding:2px 4px 6px">📂 القوائم الصوتية</div>
+    <div id="audioPlaylistCheckList"></div>
+    <div class="modal-item" onclick="openAddAudioListModal()"><span class="icon">➕</span> قائمة صوتية جديدة</div>
+    <div class="modal-sep"></div>
+    <div class="modal-item danger" onclick="deleteActiveAudio()"><span class="icon">🗑</span> حذف الملف</div>
+    <div class="modal-sep"></div>
+    <div class="modal-item" onclick="closeAudioOptions()"><span class="icon">✕</span> إغلاق</div>
+  </div>
+</div>
+
+<!-- Sleep timer modal -->
+<div class="modal-overlay modal-center" id="sleepTimerModal" onclick="closeSleepTimerModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">⏰ مؤقت إيقاف تلقائي</div>
+    <div class="modal-item" onclick="setSleepTimer(15)"><span class="icon">⏱</span> بعد 15 دقيقة</div>
+    <div class="modal-item" onclick="setSleepTimer(30)"><span class="icon">⏱</span> بعد نص ساعة (30 دقيقة)</div>
+    <div class="modal-item" onclick="setSleepTimer(60)"><span class="icon">⏱</span> بعد ساعة (60 دقيقة)</div>
+    <div class="modal-item" onclick="setSleepTimer(90)"><span class="icon">⏱</span> بعد ساعة ونص (90 دقيقة)</div>
+    <div class="modal-item" onclick="promptCustomSleepTimer()"><span class="icon">✏️</span> مدة مخصصة</div>
+    <div class="modal-sep"></div>
+    <div class="modal-item danger" onclick="cancelSleepTimer()"><span class="icon">🚫</span> إلغاء المؤقت</div>
+    <div class="modal-sep"></div>
+    <div class="modal-item" onclick="closeSleepTimerModal()"><span class="icon">✕</span> إغلاق</div>
+  </div>
+</div>
+
+<!-- Telegram backup modal -->
+<div class="modal-overlay modal-center" id="telegramModal" onclick="closeTelegramModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">☁️ نسخ احتياطي على تليجرام</div>
+    <p style="font-size:12px;color:var(--gray-4);line-height:1.9;margin-bottom:12px">
+      اعمل بوت من <b>@BotFather</b> وهات الـ Token بتاعه، وابعت أي رسالة للبوت وهات الـ Chat ID بتاعك (ممكن تستخدم بوت زي <b>@userinfobot</b> عشان تجيبه).
+    </p>
+    <input class="input-field" id="tgTokenInput" placeholder="Bot Token" type="text">
+    <input class="input-field" id="tgChatIdInput" placeholder="Chat ID" type="text" style="margin-top:8px">
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray-4);margin:12px 2px">
+      <input type="checkbox" id="tgAutoSyncCheckbox" style="width:17px;height:17px">
+      إرسال أي ملف جديد لتليجرام تلقائيًا فور رفعه
+    </label>
+    <button class="btn-primary" onclick="saveTelegramSettings()">💾 حفظ الإعدادات</button>
+    <button class="btn-primary" style="background:var(--blue-mid);margin-top:8px" onclick="backupAllToTelegram()">☁️ ابعت نسخة احتياطية كاملة دلوقتي</button>
+    <div id="tgBackupProgress" style="font-size:12px;color:var(--gray-4);margin-top:10px;text-align:center"></div>
+  </div>
+</div>
+
+<!-- AI correction settings modal -->
+<div class="modal-overlay modal-center" id="aiSettingsModal" onclick="closeAiSettings()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🤖 تصحيح الكتب بالذكاء الاصطناعي</div>
+    <p style="font-size:12px;color:var(--gray-4);line-height:1.9;margin-bottom:12px">
+      ميزة "تصحيح الكتاب" بتشيل الحروف الملخبطة والرموز الغريبة من كتبك باستخدام Claude. محتاج تحط مفتاح Claude API بتاعك (من console.anthropic.com) — بيتخزن على جهازك بس وبيتبعت مباشرة لـ Anthropic وقت التصحيح فقط.
+    </p>
+    <input class="input-field" id="aiKeyInput" placeholder="Claude API Key (sk-ant-...)" type="password">
+    <button class="btn-primary" style="background:linear-gradient(135deg,#8e24aa,#ab47bc)" onclick="saveAiSettings()">💾 حفظ المفتاح</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== Wake Lock =====
+let _wakeLock = null;
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      _wakeLock = await navigator.wakeLock.request('screen');
+    }
+  } catch(e) { console.log('WakeLock:', e); }
+}
+async function releaseWakeLock() {
+  try {
+    if (_wakeLock) { await _wakeLock.release(); _wakeLock = null; }
+  } catch(e) {}
+}
+// إعادة الـ wake lock لو اتحرر تلقائياً (مثلاً لما الشاشة ترجع)
+document.addEventListener('visibilitychange', async () => {
+  if (_wakeLock !== null && document.visibilityState === 'visible') {
+    await requestWakeLock();
+  }
+});
+
+// ===== IndexedDB =====
+const DB_NAME = 'maktabati_db';
+const DB_VER  = 2;
+let db;
+
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('books'))  d.createObjectStore('books',  { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('audios')) d.createObjectStore('audios', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('files'))  d.createObjectStore('files');
+    };
+    req.onsuccess = e => { db = e.target.result; res(db); };
+    req.onerror   = e => rej(e.target.error);
+  });
+}
+
+function idbSave(key, data) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').put(data, key);
+    tx.oncomplete = res;
+    tx.onerror = () => rej(tx.error);
+  });
+}
+function idbGet(key) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction('files', 'readonly');
+    const req = tx.objectStore('files').get(key);
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+function idbDelete(key) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction('files', 'readwrite');
+    tx.objectStore('files').delete(key);
+    tx.oncomplete = res;
+    tx.onerror = () => rej(tx.error);
+  });
+}
+
+// الملفات بتتحفظ كـ Blob مباشرة (أوفر في الذاكرة)، لكن السجلات القديمة كانت متحفوظة كـ ArrayBuffer، فالدالة دي بتتعامل مع الاتنين
+async function getFileArrayBuffer(fileRecord) {
+  const d = fileRecord.data;
+  if (d instanceof ArrayBuffer) return d;
+  if (d && typeof d.arrayBuffer === 'function') return await d.arrayBuffer();
+  return d;
+}
+
+function dbGetAll(store) {
+  return new Promise((res, rej) => {
+    const tx  = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbPut(store, obj) {
+  return new Promise((res, rej) => {
+    const tx  = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).put(obj);
+    req.onsuccess = () => res();
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbDelete(store, id) {
+  return new Promise((res, rej) => {
+    const tx  = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).delete(id);
+    req.onsuccess = () => res();
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbGet(store, id) {
+  return new Promise((res, rej) => {
+    const tx  = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).get(id);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+// ===== STATE =====
+let books  = [];
+let audios = [];
+let customLists    = JSON.parse(localStorage.getItem('mk_lists') || '[]');
+let audioPlaylists = JSON.parse(localStorage.getItem('mk_audio_lists') || '[]');
+let currentAudioFilter = 'all';
+let activeAudioId  = null;
+let positions      = JSON.parse(localStorage.getItem('mk_pos')   || '{}');
+let activeBookId   = null;
+let currentFilter  = 'all';
+let fontSize       = 18;
+let currentTab     = 'books';
+let audioIndex     = 0;
+let playing        = false;
+const audioEl      = document.getElementById('audioEl');
+let audioPlayMode  = localStorage.getItem('mk_audio_playmode') || 'all'; // 'all' = كل المقاطع بالترتيب، 'one' = المقطع الحالي بس
+let _sleepTimerTimeout  = null;
+let _sleepTimerInterval = null;
+let _sleepTimerEndAt    = null;
+
+// ===== INIT =====
+openDB().then(async () => {
+  books  = await dbGetAll('books');
+  audios = await dbGetAll('audios');
+  books.sort((a,b) => b.addedAt - a.addedAt);
+  sortAudios();
+  renderBooks();
+  renderAudios();
+  renderCustomLists();
+  renderAudioPlaylists();
+}).catch(err => {
+  showToast('⚠️ خطأ في قاعدة البيانات: ' + err.message);
+});
+
+// طلب تخزين "دائم" من المتصفح، عشان يقلل احتمال إن المتصفح يمسح البيانات
+// تلقائيًا وقت ضغط المساحة (ده بيحصل مع IndexedDB لو مش persisted)
+let lastPersistState = null;
+(async function requestPersistentStorage() {
+  try {
+    if (navigator.storage && navigator.storage.persist) {
+      const already = await navigator.storage.persisted();
+      const granted  = already || await navigator.storage.persist();
+      lastPersistState = granted;
+      updateStorageInfo(granted);
+    } else {
+      lastPersistState = null;
+      updateStorageInfo(null);
+    }
+  } catch (e) {
+    lastPersistState = null;
+    updateStorageInfo(null);
+  }
+})();
+
+function formatBytes(bytes) {
+  if (!bytes || bytes <= 0) return '0 MB';
+  const mb = bytes / (1024 * 1024);
+  if (mb >= 1024) return (mb / 1024).toFixed(2) + ' GB';
+  return mb.toFixed(1) + ' MB';
+}
+
+async function updateStorageInfo(persistGranted) {
+  const fillEl  = document.getElementById('storageBarFill');
+  const textEl  = document.getElementById('storageText');
+  const badgeEl = document.getElementById('storagePersistBadge');
+  if (!fillEl || !textEl) return;
+
+  if (navigator.storage && navigator.storage.estimate) {
+    try {
+      const { usage, quota } = await navigator.storage.estimate();
+      const pct = quota ? Math.min(100, (usage / quota) * 100) : 0;
+      fillEl.style.width = pct + '%';
+      fillEl.classList.toggle('warn', pct >= 80);
+      textEl.textContent = `مُستخدم ${formatBytes(usage)} من أصل ${formatBytes(quota)} (${pct.toFixed(1)}%)`;
+    } catch (e) {
+      textEl.textContent = 'تعذّر حساب المساحة المستخدمة';
+    }
+  } else {
+    textEl.textContent = 'المتصفح لا يدعم عرض المساحة';
+  }
+
+  if (badgeEl) {
+    if (persistGranted === true) {
+      badgeEl.textContent = '✔ التخزين مضمون (لن يُمسح تلقائيًا)';
+      badgeEl.className = 'storage-persist ok';
+    } else if (persistGranted === false) {
+      badgeEl.textContent = '⚠ التخزين غير مضمون — خُد نسخة احتياطية بانتظام';
+      badgeEl.className = 'storage-persist bad';
+    } else {
+      badgeEl.textContent = '';
+      badgeEl.className = 'storage-persist';
+    }
+  }
+}
+
+// ===== SIDEBAR =====
+function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.add('open'); updateStorageInfo(lastPersistState); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('open'); }
+
+// ===== TABS =====
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tabBooks').classList.toggle('active', tab === 'books');
+  document.getElementById('tabAudio').classList.toggle('active', tab === 'audio');
+  document.getElementById('booksTab').style.display = tab === 'books' ? 'block' : 'none';
+  document.getElementById('audioTab').style.display = tab === 'audio' ? 'block' : 'none';
+}
+function switchToAudio() { switchTab('audio'); closeSidebar(); }
+
+// ===== FILE UPLOAD =====
+document.getElementById('fileInput').addEventListener('change', async function(e) {
+  const files = Array.from(e.target.files);
+  e.target.value = '';
+  if (!files.length) return;
+
+  for (const file of files) {
+    const tempId = 'tmp_' + Date.now();
+    addUploadingCard(tempId, file.name);
+
+    try {
+      const bookId = Date.now() + '_' + Math.random().toString(36).slice(2);
+      const book = {
+        id:       bookId,
+        name:     file.name.replace(/\.[^.]+$/, ''),
+        ext:      getExt(file.name),
+        type:     getType(file.name),
+        size:     fmtSize(file.size),
+        addedAt:  Date.now(),
+        dateStr:  new Date().toLocaleDateString('ar-EG'),
+        category: 'all',
+        progress: 0
+      };
+      // نحفظ الملف نفسه (Blob) مباشرة من غير ما نقرأه في الذاكرة كـ ArrayBuffer — أوفر بكتير في الذاكرة
+      await idbSave('file_' + bookId, { data: await toStoredBlob(file), type: book.ext });
+      await dbPut('books', book);
+      books.unshift(book);
+      removeUploadingCard(tempId);
+      showToast('✅ تم رفع "' + book.name + '"');
+      renderBooks();
+      if (tgSettings.autoSync && tgSettings.token && tgSettings.chatId) {
+        sendFileToTelegram(file, file.name, '📚 ' + book.name).catch(()=>{});
+      }
+    } catch (err) {
+      removeUploadingCard(tempId);
+      showToast('❌ فشل رفع "' + file.name + '"');
+      console.error(err);
+    }
+  }
+});
+
+document.getElementById('audioInput').addEventListener('change', async function(e) {
+  const files = Array.from(e.target.files);
+  e.target.value = '';
+  if (!files.length) return;
+
+  // نرتب الملفات المختارة ترتيب طبيعي (١، ٢، ٣ ... مش ١، ١٠، ٢) عشان ترفع بنفس ترتيب الحلقات
+  files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+
+  // رقم الترتيب بيكمل من آخر رقم موجود، عشان لو رفعت دفعة جديدة تتحط بعد اللي قبلها
+  let nextOrder = audios.reduce((max, a) => Math.max(max, (typeof a.order === 'number' ? a.order : 0)), 0) + 1;
+
+  showToast('⬆️ جارٍ رفع ' + files.length + ' ملف بالترتيب...');
+
+  for (const file of files) {
+    const tempId = 'tmp_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    addUploadingCard(tempId, file.name, true);
+    try {
+      const audioId = Date.now() + '_' + Math.random().toString(36).slice(2);
+      const audio = {
+        id:      audioId,
+        name:    file.name.replace(/\.[^.]+$/, ''),
+        ext:     getExt(file.name),
+        size:    fmtSize(file.size),
+        addedAt: Date.now(),
+        dateStr: new Date().toLocaleDateString('ar-EG'),
+        order:   nextOrder++,
+        // لو المستخدم كان فاتح قائمة تشغيل معينة وقت الرفع، الملف بيتحط فيها على طول
+        playlistIds: currentAudioFilter !== 'all' ? [currentAudioFilter] : []
+      };
+      // نحفظ الملف نفسه (Blob) مباشرة من غير قراءته في الذاكرة كـ ArrayBuffer — أوفر بكتير في الذاكرة خصوصًا مع رفع دفعة ملفات
+      await idbSave('file_' + audioId, { data: file, type: audio.ext });
+      await dbPut('audios', audio);
+      audios.push(audio);
+      sortAudios();
+      removeUploadingCard(tempId, true);
+      const plName = currentAudioFilter !== 'all' ? ((audioPlaylists.find(l => l.id === currentAudioFilter) || {}).name) : null;
+      showToast('✅ تم رفع "' + audio.name + '"' + (plName ? ' لقائمة "' + plName + '"' : ''));
+      renderAudios();
+      if (tgSettings.autoSync && tgSettings.token && tgSettings.chatId) {
+        sendFileToTelegram(file, file.name, '🎵 [' + audio.order + '] ' + audio.name).catch(()=>{});
+      }
+    } catch(err) {
+      removeUploadingCard(tempId, true);
+      showToast('❌ فشل رفع "' + file.name + '"');
+      console.error(err);
+    }
+  }
+});
+
+// ترتيب الصوتيات حسب رقم الترتيب (order)، ولو مش موجود بترتب حسب تاريخ الإضافة كـ احتياطي
+function sortAudios() {
+  audios.sort((a, b) => {
+    const oa = typeof a.order === 'number' ? a.order : a.addedAt;
+    const ob = typeof b.order === 'number' ? b.order : b.addedAt;
+    return oa - ob;
+  });
+}
+
+function readFileAsBuffer(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload  = () => res(reader.result);
+    reader.onerror = () => rej(new Error('قراءة الملف فشلت'));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+const AUDIO_MIME = { mp3:'audio/mpeg', m4a:'audio/mp4', wav:'audio/wav', ogg:'audio/ogg', aac:'audio/aac', mp4:'audio/mp4' };
+
+function addUploadingCard(id, name, isAudio) {
+  const grid = document.getElementById(isAudio ? 'audioGrid' : 'booksGrid');
+  // remove empty state
+  const empty = grid.querySelector('.empty-state');
+  if (empty) empty.remove();
+  const div = document.createElement('div');
+  div.className = 'uploading-card';
+  div.id = 'upload_' + id;
+  div.innerHTML = `<div class="uploading-spinner"></div><div><div class="uploading-name">${name}</div><div class="uploading-sub">جارٍ الرفع...</div></div>`;
+  grid.prepend(div);
+}
+function removeUploadingCard(id, isAudio) {
+  const el = document.getElementById('upload_' + id);
+  if (el) el.remove();
+}
+
+function getExt(name) { return name.split('.').pop().toLowerCase(); }
+function getType(name) {
+  const ext = getExt(name);
+  if (ext === 'pdf') return 'pdf';
+  if (['doc','docx'].includes(ext)) return 'word';
+  if (['xls','xlsx'].includes(ext)) return 'excel';
+  if (ext === 'epub') return 'epub';
+  return 'other';
+}
+function fmtSize(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(0) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
+}
+
+// ===== RENDER BOOKS =====
+function renderBooks() {
+  const grid = document.getElementById('booksGrid');
+  let list = currentFilter === 'all' ? books : books.filter(b => b.category === currentFilter);
+  document.getElementById('bookCount').textContent = list.length + ' كتاب';
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="icon">📖</div><h3>مكتبتك فاضية</h3><p>اضغط على "رفع كتاب"<br>لإضافة كتبك</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(b => {
+    const cover = {pdf:'cover-pdf',word:'cover-word',excel:'cover-excel',epub:'cover-other',other:'cover-other'}[b.type] || 'cover-other';
+    const icon  = {pdf:'📄',word:'📝',excel:'📊',epub:'📗',other:'📋'}[b.type] || '📋';
+    const ext   = (b.ext || b.type).toUpperCase();
+    const pos   = positions[b.id] || 0;
+    return `
+    <div class="book-card" onclick="openBook('${b.id}')">
+      <div class="book-cover ${cover}">${icon}<span class="cover-badge">${ext}</span></div>
+      <div class="book-info">
+        <div class="book-title">${b.name}</div>
+        <div class="book-meta"><span>📅 ${b.dateStr}</span><span>💾 ${b.size}</span>${b.fixed ? '<span class="fixed-badge">🩹 مُصحَّح</span>' : ''}</div>
+        <div class="book-progress">
+          <div class="progress-bar"><div class="progress-fill" style="width:${pos}%"></div></div>
+          <div class="progress-label">${pos > 0 ? 'آخر موضع: ' + pos + '%' : 'لم تبدأ بعد'}</div>
+        </div>
+      </div>
+      <div class="book-actions">
+        <button class="book-btn btn-read" onclick="event.stopPropagation();openBook('${b.id}')">📖</button>
+        <button class="book-btn btn-fix" title="تصحيح الكتاب بالذكاء الاصطناعي" onclick="event.stopPropagation();fixBook('${b.id}')">🩹</button>
+        <button class="book-btn btn-more" onclick="event.stopPropagation();openOptions('${b.id}')">⋮</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAudios() {
+  const grid = document.getElementById('audioGrid');
+  const list = currentAudioFilter === 'all'
+    ? audios
+    : audios.filter(a => Array.isArray(a.playlistIds) && a.playlistIds.includes(currentAudioFilter));
+  document.getElementById('audioCount').textContent = list.length + ' ملف';
+  if (!list.length) {
+    const msg = currentAudioFilter === 'all'
+      ? `<div class="empty-state"><div class="icon">🎵</div><h3>لا يوجد ملفات صوتية</h3><p>اضغط "رفع ملفات صوتية"<br>لإضافة ملفاتك</p></div>`
+      : `<div class="empty-state"><div class="icon">📁</div><h3>القائمة فاضية</h3><p>افتح خيارات أي ملف صوتي<br>وضيفه للقائمة دي</p></div>`;
+    grid.innerHTML = msg;
+    return;
+  }
+  grid.innerHTML = list.map((a) => {
+    const i = audios.indexOf(a);
+    return `
+    <div class="book-card" onclick="playAudio(${i})">
+      <div class="book-cover cover-audio">🎵<span class="cover-badge">${(a.ext||'MP3').toUpperCase()}</span></div>
+      <div class="book-info">
+        <div class="book-title">${(typeof a.order === 'number' ? '['+a.order+'] ' : '') + a.name}</div>
+        <div class="book-meta"><span>${audioStatusIcon(a)} ${audioStatusPct(a)}%</span><span>📅 ${a.dateStr}</span><span>💾 ${a.size}</span></div>
+      </div>
+      <div class="book-actions">
+        <button class="book-btn btn-read" onclick="event.stopPropagation();playAudio(${i})">▶</button>
+        <button class="book-btn btn-more" onclick="event.stopPropagation();openAudioOptions('${a.id}')">⋮</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCustomLists() {
+  document.getElementById('customListsContainer').innerHTML =
+    customLists.map(l => `<div class="sidebar-item" onclick="filterBooks('custom_${l.id}');closeSidebar()"><span class="icon">📁</span>${l.name}</div>`).join('');
+}
+
+// ===== FILTER =====
+function filterBooks(cat) {
+  currentFilter = cat;
+  const labels = {all:'كل الكتب',history:'التاريخ',poetry:'الشعر',literature:'الأدب',religion:'الدين',science:'العلوم'};
+  document.getElementById('sectionTitle').textContent = labels[cat] || 'قائمة مخصصة';
+  renderBooks();
+  switchTab('books');
+  closeSidebar();
+}
+
+// ===== OPEN BOOK =====
+async function openBook(id) {
+  // البحث في المصفوفة المحملة في الذاكرة (ID قد يكون string)
+  const book = books.find(b => String(b.id) === String(id));
+  if (!book) { showToast('❌ الكتاب غير موجود'); return; }
+  activeBookId = book.id;
+  document.getElementById('readerTitle').textContent = book.name;
+  document.getElementById('readerOverlay').classList.add('open');
+  applyReaderFont();
+
+  const content = document.getElementById('readerContent');
+  content.innerHTML = '<div style="text-align:center;padding:40px;color:#888;font-size:15px">&#x23F3; جارٍ تحميل الملف...</div>';
+
+  try {
+    const fileRecord = await idbGet('file_' + book.id);
+    if (!fileRecord) throw new Error('الملف غير موجود');
+    const buf = await getFileArrayBuffer(fileRecord);
+    const ext = fileRecord.type || book.ext;
+
+    // نرجّع الإعدادات الافتراضية لمساحة القراءة (ممكن تكون اتغيّرت لو الكتاب اللي قبل كده كان PDF)
+    content.style.padding = '24px 20px';
+    content.style.overflow = 'auto';
+    // شريط الخط/الألوان معناش أي حاجة لملف PDF (هو صورة صفحة مش نص)، فبنخفيه عشان الشاشة تتفرّغ للكتاب بالكامل
+    document.getElementById('readerToolbar').style.display = (book.type === 'pdf') ? 'none' : 'flex';
+
+    if (book.type === 'pdf') {
+      // نلغي الـ padding والـ scroll بتوع reader-content عشان عارض الـ PDF ياخد المساحة كاملة من غير سكرول مزدوج
+      content.style.padding = '0';
+      content.style.overflow = 'hidden';
+      // عرض PDF صفحة صفحة باستخدام PDF.js
+      content.innerHTML = `
+        <div id="pdfViewerWrap" style="background:#525659;padding:10px;min-height:100%;height:100%;overflow:auto;touch-action:pan-y;-webkit-user-select:none;user-select:none">
+          <div style="text-align:center;padding:20px;color:#ccc;font-size:13px" id="pdfLoadMsg">&#x23F3; جارٍ تحميل...</div>
+          <div id="pdfCanvasWrap" style="display:flex;justify-content:safe center;align-items:safe center;flex-wrap:wrap;min-height:calc(100% - 60px)">
+            <canvas id="pdfCanvas" style="display:none;box-shadow:0 2px 12px rgba(0,0,0,0.4);touch-action:none;transform-origin:center center"></canvas>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 6px;position:sticky;bottom:0;background:#525659;z-index:10;flex-wrap:wrap">
+            <button onclick="pdfPrevPage()" style="padding:8px 16px;border-radius:8px;border:none;background:#fff;font-family:Tajawal;font-size:14px;font-weight:700;cursor:pointer">&#9664; السابق</button>
+            <span id="pdfPageInfo" style="color:#fff;font-size:13px;font-weight:700;min-width:70px;text-align:center">صفحة 1</span>
+            <button onclick="pdfNextPage()" style="padding:8px 16px;border-radius:8px;border:none;background:#fff;font-family:Tajawal;font-size:14px;font-weight:700;cursor:pointer">التالي &#9654;</button>
+            <span style="width:1px;height:22px;background:rgba(255,255,255,0.25);margin:0 4px"></span>
+            <button onclick="pdfZoomOut()" style="width:34px;height:34px;border-radius:8px;border:none;background:#fff;font-size:18px;font-weight:800;cursor:pointer">−</button>
+            <span id="pdfZoomVal" style="color:#fff;font-size:12px;font-weight:700;min-width:42px;text-align:center">100%</span>
+            <button onclick="pdfZoomIn()" style="width:34px;height:34px;border-radius:8px;border:none;background:#fff;font-size:18px;font-weight:800;cursor:pointer">+</button>
+            <button onclick="pdfZoomReset()" style="padding:8px 12px;border-radius:8px;border:none;background:rgba(255,255,255,0.18);color:#fff;font-family:Tajawal;font-size:12px;font-weight:700;cursor:pointer">إعادة ضبط</button>
+          </div>
+        </div>`;
+      window._pdfCurrentPage = 1;
+      window._pdfZoom = 1;
+      window._pdfDoc = null;
+      pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise.then(function(pdf) {
+        window._pdfDoc = pdf;
+        window._pdfCurrentPage = 1;
+        window._pdfZoom = 1;
+        document.getElementById('pdfLoadMsg').style.display = 'none';
+        document.getElementById('pdfCanvas').style.display = 'block';
+        setupPdfGestures();
+        // بنستنى فريمين عشان نتأكد إن المتصفح خلّص يحسب مقاسات الشاشة صح قبل ما نحسب حجم "احتواء الصفحة"
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { renderPdfPage(1); });
+        });
+      }).catch(function(err) {
+        content.innerHTML = '<div style="text-align:center;padding:30px;color:red">&#9888; تعذر فتح الملف: ' + err.message + '</div>';
+      });
+
+    } else if (book.type === 'word') {
+      // استخراج نص من DOCX باستخدام mammoth
+      const result = await mammoth.extractRawText({ arrayBuffer: buf });
+      const text = result.value || '(الملف فارغ)';
+      content.innerHTML = text.split('\n').map(l => '<p style="margin-bottom:10px">' + (l || '&nbsp;') + '</p>').join('');
+
+    } else if (book.type === 'excel') {
+      // Excel - تحميل فقط
+      const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      content.innerHTML = `
+        <div style="text-align:center;padding:40px 16px">
+          <div style="font-size:64px;margin-bottom:16px">📊</div>
+          <p style="font-size:16px;font-weight:800;color:var(--blue-dark);margin-bottom:8px">${book.name}</p>
+          <p style="font-size:13px;color:var(--gray-4);margin-bottom:20px">ملف ${book.ext.toUpperCase()} · ${book.size}</p>
+          <a href="${url}" download="${book.name}.${book.ext}"
+             style="display:inline-block;padding:12px 28px;background:var(--blue-mid);color:#fff;border-radius:10px;font-family:Tajawal;font-weight:700;text-decoration:none;font-size:15px">&#11015;&#65039; تحميل الملف</a>
+        </div>`;
+
+    } else {
+      // TXT / EPUB / other - قراءة كنص
+      const text = new TextDecoder('utf-8').decode(buf);
+      content.innerHTML = text.split('\n').map(l => '<p style="margin-bottom:10px">' + (l || '&nbsp;') + '</p>').join('');
+    }
+
+    // استرجاع موضع القراءة
+    const savedPos = positions[book.id];
+    if (savedPos && book.type !== 'pdf') {
+      setTimeout(() => { content.scrollTop = (savedPos / 100) * content.scrollHeight; }, 400);
+    }
+
+    content.onscroll = function() {
+      if (book.type === 'pdf') return;
+      const pct = Math.round((content.scrollTop / (content.scrollHeight - content.clientHeight)) * 100) || 0;
+      document.getElementById('readerProg').textContent = 'تقدم القراءة: ' + pct + '%';
+      positions[book.id] = pct;
+      localStorage.setItem('mk_pos', JSON.stringify(positions));
+      const bk = books.find(b => String(b.id) === String(book.id));
+      if (bk) { bk.progress = pct; }
+    };
+
+  } catch(err) {
+    content.innerHTML = '<div style="text-align:center;padding:40px;color:red">&#9888; ' + err.message + '</div>';
+  }
+}
+
+// ===== PDF.js HELPERS =====
+function renderPdfPage(pageNum) {
+  if (!window._pdfDoc) return;
+  window._pdfDoc.getPage(pageNum).then(function(page) {
+    const canvas = document.getElementById('pdfCanvas');
+    const wrap = document.getElementById('pdfViewerWrap');
+    if (!canvas || !wrap) return;
+    const availWidth  = Math.max(50, wrap.clientWidth - 20);
+    const availHeight = Math.max(50, wrap.clientHeight - 70);
+    const baseViewport = page.getViewport({ scale: 1 });
+    // نحسب مقاس "احتواء الصفحة" (Fit) حسب العرض والارتفاع المتاحين، سواء الشاشة عمودي أو أفقي (بعد قلبها)
+    const fitScale = Math.min(availWidth / baseViewport.width, availHeight / baseViewport.height);
+    window._pdfBaseScale = fitScale > 0 ? fitScale : 1;
+    const zoom = window._pdfZoom || 1;
+    const finalScale = Math.max(0.1, window._pdfBaseScale * zoom);
+    const viewport = page.getViewport({ scale: finalScale });
+    canvas.width  = viewport.width;
+    canvas.height = viewport.height;
+    canvas.style.transform = 'none';
+    page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport });
+    const info = document.getElementById('pdfPageInfo');
+    if (info) info.textContent = 'صفحة ' + pageNum + ' / ' + window._pdfDoc.numPages;
+    const zoomVal = document.getElementById('pdfZoomVal');
+    if (zoomVal) zoomVal.textContent = Math.round(zoom * 100) + '%';
+    window._pdfCurrentPage = pageNum;
+    if (zoom <= 1.01) canvas.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+function pdfNextPage() {
+  if (window._pdfDoc && window._pdfCurrentPage < window._pdfDoc.numPages) {
+    window._pdfZoom = 1; // كل صفحة جديدة تتعرض بحجم الشاشة الكامل من الأول
+    renderPdfPage(window._pdfCurrentPage + 1);
+  }
+}
+function pdfPrevPage() {
+  if (window._pdfDoc && window._pdfCurrentPage > 1) {
+    window._pdfZoom = 1;
+    renderPdfPage(window._pdfCurrentPage - 1);
+  }
+}
+function pdfZoomIn() {
+  window._pdfZoom = Math.min(4, +(((window._pdfZoom || 1) * 1.25).toFixed(2)));
+  renderPdfPage(window._pdfCurrentPage || 1);
+}
+function pdfZoomOut() {
+  window._pdfZoom = Math.max(0.5, +(((window._pdfZoom || 1) / 1.25).toFixed(2)));
+  renderPdfPage(window._pdfCurrentPage || 1);
+}
+function pdfZoomReset() {
+  window._pdfZoom = 1;
+  renderPdfPage(window._pdfCurrentPage || 1);
+}
+function showPdfDownloadFallback(content, book) {
+  content.innerHTML = `<div style="text-align:center;padding:40px;color:red">&#9888; تعذر فتح ملف PDF</div>`;
+}
+
+// ===== لمسة الإصبع: تقليب الصفحات يمين/شمال بالسحب + تكبير بحركة إصبعين (Pinch) =====
+function setupPdfGestures() {
+  const wrap = document.getElementById('pdfViewerWrap');
+  if (!wrap) return;
+  const pointers = new Map();
+  let pinchStartDist = 0;
+  let pinchStartZoom = 1;
+  let liveZoom = null;
+  let isPinching = false;
+  let swipeStartX = 0, swipeStartY = 0, swipeStartTime = 0;
+
+  function dist(a, b) {
+    const dx = a.x - b.x, dy = a.y - b.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function onDown(e) {
+    try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.size === 1) {
+      isPinching = false;
+      swipeStartX = e.clientX; swipeStartY = e.clientY; swipeStartTime = Date.now();
+    } else if (pointers.size === 2) {
+      isPinching = true;
+      const pts = Array.from(pointers.values());
+      const d0 = dist(pts[0], pts[1]);
+      // لو الإصبعين لسه قريبين من بعض جدًا وقت البدء، نتجاهل عشان القياس مش دقيق ومنعًا لقفزة زوم مفاجئة
+      pinchStartDist = d0 > 25 ? d0 : 0;
+      pinchStartZoom = window._pdfZoom || 1;
+      liveZoom = pinchStartZoom;
+    }
+  }
+
+  function onMove(e) {
+    if (!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (isPinching && pointers.size === 2) {
+      e.preventDefault();
+      const pts = Array.from(pointers.values());
+      const newDist = dist(pts[0], pts[1]);
+      if (pinchStartDist <= 25 && newDist > 25) {
+        // أول قياس موثوق للمسافة بين الإصبعين، نستخدمه كنقطة بداية بدل القياس الأولي غير الدقيق
+        pinchStartDist = newDist;
+        pinchStartZoom = window._pdfZoom || 1;
+        liveZoom = pinchStartZoom;
+        return;
+      }
+      if (pinchStartDist > 25) {
+        const factor = newDist / pinchStartDist;
+        liveZoom = Math.max(0.5, Math.min(4, pinchStartZoom * factor));
+        const canvas = document.getElementById('pdfCanvas');
+        if (canvas) canvas.style.transform = 'scale(' + (liveZoom / (window._pdfZoom || 1)) + ')';
+      }
+    }
+  }
+
+  function onUp(e) {
+    pointers.delete(e.pointerId);
+    if (isPinching) {
+      if (pointers.size < 2) {
+        isPinching = false;
+        const canvas = document.getElementById('pdfCanvas');
+        if (canvas) canvas.style.transform = 'none';
+        if (liveZoom) {
+          window._pdfZoom = +liveZoom.toFixed(2);
+          liveZoom = null;
+          renderPdfPage(window._pdfCurrentPage || 1);
+        }
+      }
+      return;
+    }
+    if (pointers.size === 0) {
+      const dx = e.clientX - swipeStartX;
+      const dy = e.clientY - swipeStartY;
+      const dt = Date.now() - swipeStartTime;
+      const zoom = window._pdfZoom || 1;
+      // التقليب بالسحب يشتغل فقط لما الصفحة مش مكبّرة (زوم عادي)، عشان السحب وقتها يبقى تصفّح داخل الصفحة المكبّرة
+      if (zoom <= 1.05 && Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.3 && dt < 800) {
+        if (dx < 0) pdfNextPage(); else pdfPrevPage();
+      }
+    }
+  }
+
+  wrap.addEventListener('pointerdown', onDown);
+  wrap.addEventListener('pointermove', onMove, { passive: false });
+  wrap.addEventListener('pointerup', onUp);
+  wrap.addEventListener('pointercancel', onUp);
+
+  // زوم بعجلة الماوس + Ctrl (لمستخدمي الكمبيوتر)
+  wrap.addEventListener('wheel', function(e) {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    if (e.deltaY < 0) pdfZoomIn(); else pdfZoomOut();
+  }, { passive: false });
+}
+
+// إعادة احتواء الصفحة تلقائيًا لما تتغيّر أبعاد الشاشة (زي قلب الموبايل بالعرض في وضع ملء الشاشة)
+window.addEventListener('resize', function() {
+  if (!window._pdfDoc) return;
+  clearTimeout(window._pdfResizeTimer);
+  window._pdfResizeTimer = setTimeout(function () {
+    renderPdfPage(window._pdfCurrentPage || 1);
+  }, 200);
+});
+if (window.screen && screen.orientation) {
+  screen.orientation.addEventListener('change', function() {
+    if (!window._pdfDoc) return;
+    setTimeout(function () { renderPdfPage(window._pdfCurrentPage || 1); }, 250);
+  });
+}
+
+function closeReader() {
+  document.getElementById('readerOverlay').classList.remove('open');
+  if (document.fullscreenElement) document.exitFullscreen();
+  renderBooks();
+}
+
+async function toggleFullscreen() {
+  const overlay = document.getElementById('readerOverlay');
+  if (!document.fullscreenElement) {
+    try {
+      await overlay.requestFullscreen();
+    } catch (err) { /* بعض المتصفحات مش بتدعم ملء الشاشة، هنكمل عادي */ }
+    // نحاول نقلب الشاشة بالعرض تلقائيًا (بيشتغل غالبًا على أندرويد/كروم، ومش مدعوم على آيفون فمش هيحصل خطأ ظاهر)
+    try {
+      if (screen.orientation && screen.orientation.lock) {
+        await screen.orientation.lock('landscape');
+      }
+    } catch (err) { /* الجهاز مش بيدعم قفل الاتجاه — المستخدم يقدر يلف الموبايل يدويًا */ }
+  } else {
+    try {
+      if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+    } catch (err) {}
+    document.exitFullscreen();
+  }
+}
+
+document.addEventListener('fullscreenchange', function() {
+  const btn = document.getElementById('fsBtn');
+  if (!btn) return;
+  if (document.fullscreenElement) {
+    btn.textContent = '✕ خروج';
+  } else {
+    btn.textContent = '⛶ ملء الشاشة';
+    try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (err) {}
+  }
+  if (window._pdfDoc) setTimeout(function () { renderPdfPage(window._pdfCurrentPage || 1); }, 150);
+});
+
+// ===== READER SETTINGS =====
+function applyReaderFont() {
+  document.getElementById('readerContent').style.fontSize = fontSize + 'px';
+  document.getElementById('fontSzVal').textContent = fontSize;
+}
+function chgFontSize(d) {
+  fontSize = Math.max(10, Math.min(42, fontSize + d));
+  applyReaderFont();
+}
+function chgFontFamily(v) { document.getElementById('readerContent').style.fontFamily = v; }
+function chgTextColor(c, el) {
+  document.getElementById('readerContent').style.color = c;
+  document.querySelectorAll('.reader-toolbar .color-dot').forEach(d => d.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function chgBg(c, el) {
+  document.getElementById('readerContent').style.background = c;
+}
+
+// ===== OPTIONS =====
+function openOptions(id) {
+  activeBookId = String(id);
+  const book = books.find(b => String(b.id) === String(id));
+  const restoreItem = document.getElementById('restoreOriginalItem');
+  if (restoreItem) restoreItem.style.display = (book && book.fixed) ? 'flex' : 'none';
+  document.getElementById('bookMenuModal').classList.add('open');
+}
+function closeBookMenu() { document.getElementById('bookMenuModal').classList.remove('open'); }
+function openBookMenu()  { openOptions(activeBookId); }
+
+async function deleteActive() {
+  closeBookMenu();
+  closeReader();
+  const bookToDelete = books.find(b => String(b.id) === String(activeBookId));
+  if (bookToDelete) {
+    await dbDelete('books', bookToDelete.id);
+    await idbDelete('file_' + bookToDelete.id).catch(()=>{});
+  }
+  books = books.filter(b => String(b.id) !== String(activeBookId));
+  renderBooks();
+  showToast('🗑 تم حذف الكتاب');
+}
+
+async function convertActive() {
+  closeBookMenu();
+  const book = books.find(b => String(b.id) === String(activeBookId));
+  if (!book) return;
+  doConvert(book);
+}
+
+function showConvertProgress(bookName, onDone) {
+  const overlay = document.createElement('div');
+  overlay.id = 'convertProgressOverlay';
+  overlay.style.cssText = `
+    position:fixed;inset:0;z-index:9999;background:rgba(10,37,64,0.7);
+    display:flex;align-items:center;justify-content:center;
+  `;
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:30px 28px;width:calc(100% - 48px);max-width:340px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.3)">
+      <div style="font-size:40px;margin-bottom:12px">📄</div>
+      <div style="font-size:15px;font-weight:800;color:#0a2540;margin-bottom:6px">${bookName}</div>
+      <div style="font-size:13px;color:#607d8b;margin-bottom:20px" id="convertStatusText">جارٍ التحويل إلى Word...</div>
+      <div style="background:#e8edf5;border-radius:99px;height:10px;overflow:hidden;margin-bottom:8px">
+        <div id="convertProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#f57c00,#ff9800);border-radius:99px;transition:width 0.2s ease"></div>
+      </div>
+      <div id="convertProgressPct" style="font-size:13px;font-weight:700;color:#f57c00">0%</div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  function setUI(pct, msg) {
+    const bar = document.getElementById('convertProgressBar');
+    const lbl = document.getElementById('convertProgressPct');
+    const txt = document.getElementById('convertStatusText');
+    if (bar) bar.style.width = pct + '%';
+    if (lbl) lbl.textContent = pct + '%';
+    if (txt && msg) txt.textContent = msg;
+  }
+
+  function animateTo(from, to, ms) {
+    return new Promise(resolve => {
+      const start = Date.now();
+      (function tick() {
+        const r = Math.min((Date.now() - start) / ms, 1);
+        setUI(Math.round(from + (to - from) * r), null);
+        if (r < 1) requestAnimationFrame(tick); else resolve();
+      })();
+    });
+  }
+
+  (async () => {
+    await animateTo(0, 10, 250);
+    setUI(10, 'جارٍ استخراج النصوص...');
+
+    let fake = 10;
+    const tid = setInterval(() => {
+      if (fake < 88) {
+        fake += fake < 40 ? 3 : fake < 70 ? 2 : 1;
+        const msg = fake < 40 ? 'جارٍ استخراج النصوص...'
+                  : fake < 70 ? 'جارٍ تنسيق المحتوى...'
+                  : 'جارٍ بناء ملف Word...';
+        setUI(fake, msg);
+      }
+    }, 220);
+
+    try { await onDone(); } catch(e) {}
+
+    clearInterval(tid);
+    await animateTo(fake, 100, 500);
+    setUI(100, '✅ تم التحويل بنجاح!');
+    setTimeout(() => {
+      const el = document.getElementById('convertProgressOverlay');
+      if (el) el.remove();
+    }, 1400);
+  })();
+}
+
+// ===== PDF → صور =====
+async function pdfPageToImage(page, scale) {
+  const viewport = page.getViewport({ scale: scale || 1.8 });
+  const canvas = document.createElement('canvas');
+  canvas.width  = viewport.width;
+  canvas.height = viewport.height;
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+  return canvas.toDataURL('image/jpeg', 0.82);
+}
+
+// ===== OCR صفحة عبر OCR.space =====
+async function ocrPageWithClaude(imageBase64) {
+  const formData = new FormData();
+  formData.append('base64Image', imageBase64);
+  formData.append('language', 'ara');
+  formData.append('isOverlayRequired', 'false');
+  formData.append('detectOrientation', 'true');
+  formData.append('scale', 'true');
+  formData.append('OCREngine', '1');
+  formData.append('apikey', 'K87398704988957');
+
+  const resp = await fetch('https://api.ocr.space/parse/image', {
+    method: 'POST',
+    body: formData
+  });
+  if (!resp.ok) throw new Error('OCR error ' + resp.status);
+  const data = await resp.json();
+  if (data.IsErroredOnProcessing) throw new Error(data.ErrorMessage?.[0] || 'OCR فشل');
+  return (data.ParsedResults || []).map(r => r.ParsedText || '').join('\n');
+}
+
+async function doConvert(book) {
+  if (!book) return;
+  closeBookMenu();
+  closeConvertModal();
+
+  // عرض نافذة التحويل
+  const overlay = document.createElement('div');
+  overlay.id = 'ocrOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(10,37,64,0.75);display:flex;align-items:center;justify-content:center';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:28px 24px;width:calc(100% - 40px);max-width:360px;text-align:center">
+      <div style="font-size:38px;margin-bottom:10px">📖</div>
+      <div style="font-size:15px;font-weight:800;color:#0a2540;margin-bottom:4px">${book.name}</div>
+      <div style="font-size:12px;color:#607d8b;margin-bottom:18px" id="ocrStatus">جارٍ تجهيز الملف...</div>
+      <div style="background:#e8edf5;border-radius:99px;height:10px;overflow:hidden;margin-bottom:6px">
+        <div id="ocrBar" style="height:100%;width:0%;background:linear-gradient(90deg,#1565c0,#1e88e5);border-radius:99px;transition:width 0.4s ease"></div>
+      </div>
+      <div id="ocrPct" style="font-size:13px;font-weight:700;color:#1565c0;margin-bottom:14px">0%</div>
+      <div id="ocrPageInfo" style="font-size:11px;color:#90a4ae"></div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  function setOCR(pct, status, pageInfo) {
+    const bar = document.getElementById('ocrBar');
+    const lbl = document.getElementById('ocrPct');
+    const txt = document.getElementById('ocrStatus');
+    const pg  = document.getElementById('ocrPageInfo');
+    if (bar) bar.style.width = pct + '%';
+    if (lbl) lbl.textContent = pct + '%';
+    if (txt && status) txt.textContent = status;
+    if (pg  && pageInfo !== undefined) pg.textContent = pageInfo;
+  }
+
+  await requestWakeLock();
+
+  try {
+    const fileRecord = await idbGet('file_' + book.id);
+    if (!fileRecord) throw new Error('الملف غير موجود');
+    const fileBuf = await getFileArrayBuffer(fileRecord);
+
+    let allText = '';
+
+    if (book.type === 'pdf') {
+      setOCR(2, 'جارٍ فتح ملف PDF...');
+      const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(fileBuf) }).promise;
+      const total = pdf.numPages;
+
+      for (let i = 1; i <= total; i++) {
+        const pct = Math.round(((i - 1) / total) * 90) + 5;
+        setOCR(pct, `جارٍ قراءة الصفحات بالذكاء الاصطناعي...`, `صفحة ${i} من ${total}`);
+        const page = await pdf.getPage(i);
+        const img  = await pdfPageToImage(page, 1.8);
+        const text = await ocrPageWithClaude(img);
+        allText += text + '\n\n';
+      }
+
+    } else if (book.type === 'word') {
+      setOCR(30, 'جارٍ استخراج النص...');
+      const result = await mammoth.extractRawText({ arrayBuffer: fileBuf });
+      allText = result.value || '';
+
+    } else {
+      setOCR(30, 'جارٍ قراءة الملف...');
+      allText = new TextDecoder('utf-8').decode(fileBuf);
+    }
+
+    setOCR(95, 'جارٍ بناء ملف Word...');
+
+    // بناء .docx حقيقي باستخدام docx.js
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageOrientation } = docx;
+
+    const lines = allText.split('\n');
+    const docChildren = [];
+
+    // عنوان الكتاب
+    docChildren.push(new Paragraph({
+      text: book.name,
+      heading: HeadingLevel.HEADING_1,
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 300 }
+    }));
+
+    // معلومات الملف
+    docChildren.push(new Paragraph({
+      children: [
+        new TextRun({ text: `نوع الملف: ${(book.ext||book.type).toUpperCase()}   |   الحجم: ${book.size}   |   تاريخ التحويل: ${new Date().toLocaleDateString('ar-EG')}`, size: 20, color: '555555' })
+      ],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 400 }
+    }));
+
+    // محتوى النص
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t) {
+        docChildren.push(new Paragraph({ text: '', spacing: { after: 100 } }));
+        continue;
+      }
+      // فواصل الصفحات (---)
+      if (t === '---' || t === '——') {
+        docChildren.push(new Paragraph({
+          children: [new TextRun({ text: '─────────────────────', color: 'AAAAAA' })],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 200, after: 200 }
+        }));
+        continue;
+      }
+      docChildren.push(new Paragraph({
+        children: [
+          new TextRun({
+            text: t,
+            size: 28,        // 14pt
+            font: 'Times New Roman',
+            rtl: true
+          })
+        ],
+        alignment: AlignmentType.RIGHT,
+        bidirectional: true,
+        spacing: { after: 160, line: 480, lineRule: 'auto' }  // مسافة سطر 1.9
+      }));
+    }
+
+    const doc = new Document({
+      sections: [{
+        properties: {
+          page: {
+            margin: { top: 1440, bottom: 1440, right: 1440, left: 1440 }  // 2.5cm
+          }
+        },
+        children: docChildren
+      }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = book.name + '.docx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setOCR(100, '✅ اكتمل التحويل!', '');
+    await releaseWakeLock();
+    setTimeout(() => {
+      const el = document.getElementById('ocrOverlay');
+      if (el) el.remove();
+      showToast('✅ تم — تم تنزيل ملف Word (.docx)');
+    }, 1500);
+
+  } catch(err) {
+    await releaseWakeLock();
+    const el = document.getElementById('ocrOverlay');
+    if (el) el.remove();
+    showToast('❌ فشل التحويل: ' + err.message);
+    console.error(err);
+  }
+}
+
+// ===== CONVERT MODAL =====
+function openConvertModal() {
+  const list = document.getElementById('convertList');
+  if (!books.length) {
+    list.innerHTML = '<p style="color:var(--gray-4);text-align:center;padding:16px">لا يوجد كتب</p>';
+  } else {
+    list.innerHTML = books.map(b => {
+      const icon = {pdf:'📄',word:'📝',excel:'📊',epub:'📗',other:'📋'}[b.type]||'📋';
+      return `<div class="modal-item" onclick="doConvert(books.find(x=>String(x.id)==='${b.id}'))">
+        <span class="icon">${icon}</span>${b.name}
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('convertModal').classList.add('open');
+}
+function closeConvertModal() { document.getElementById('convertModal').classList.remove('open'); }
+
+// ===== ADD LIST =====
+function openAddListModal()  { document.getElementById('addListModal').classList.add('open'); }
+function closeAddListModal() { document.getElementById('addListModal').classList.remove('open'); }
+function createList() {
+  const name = document.getElementById('listNameInput').value.trim();
+  if (!name) { showToast('⚠️ اكتب اسم القائمة'); return; }
+  const l = { id: Date.now(), name };
+  customLists.push(l);
+  localStorage.setItem('mk_lists', JSON.stringify(customLists));
+  renderCustomLists();
+  closeAddListModal();
+  document.getElementById('listNameInput').value = '';
+  showToast('✅ تم إنشاء "' + name + '"');
+}
+
+// ===== AUDIO PLAYLISTS =====
+function openAddAudioListModal()  { document.getElementById('addAudioListModal').classList.add('open'); }
+function closeAddAudioListModal() { document.getElementById('addAudioListModal').classList.remove('open'); }
+
+function createAudioPlaylist() {
+  const input = document.getElementById('audioListNameInput');
+  const name = input.value.trim();
+  if (!name) { showToast('⚠️ اكتب اسم القائمة'); return; }
+  const l = { id: 'apl_' + Date.now() + '_' + Math.random().toString(36).slice(2), name };
+  audioPlaylists.push(l);
+  localStorage.setItem('mk_audio_lists', JSON.stringify(audioPlaylists));
+  renderAudioPlaylists();
+  closeAddAudioListModal();
+  input.value = '';
+  showToast('✅ تم إنشاء قائمة "' + name + '"');
+  // لو المودال ده اتفتح من جوه خيارات ملف صوتي، حدّث القايمة جوه المودال كمان
+  if (activeAudioId !== null) renderAudioPlaylistCheckList();
+}
+
+function renderAudioPlaylists() {
+  const box = document.getElementById('audioPlaylistsContainer');
+  box.innerHTML = audioPlaylists.map(l => `
+    <div class="sidebar-item${currentAudioFilter === l.id ? ' active' : ''}" onclick="filterAudios('${l.id}')">
+      <span class="icon">📁</span>${l.name}
+      <span style="margin-inline-start:auto;opacity:.55;font-size:13px;padding:2px 4px" onclick="event.stopPropagation();deleteAudioPlaylist('${l.id}')">✕</span>
+    </div>`).join('');
+}
+
+function deleteAudioPlaylist(id) {
+  const list = audioPlaylists.find(l => l.id === id);
+  if (!list) return;
+  if (!confirm('حذف قائمة "' + list.name + '"؟ (الملفات الصوتية نفسها هتفضل موجودة)')) return;
+  audioPlaylists = audioPlaylists.filter(l => l.id !== id);
+  localStorage.setItem('mk_audio_lists', JSON.stringify(audioPlaylists));
+  // نشيل القائمة دي من أي ملف صوتي متضاف ليها
+  audios.forEach(a => { if (Array.isArray(a.playlistIds) && a.playlistIds.includes(id)) {
+    a.playlistIds = a.playlistIds.filter(pid => pid !== id);
+    dbPut('audios', a);
+  }});
+  if (currentAudioFilter === id) currentAudioFilter = 'all';
+  renderAudioPlaylists();
+  renderAudios();
+  showToast('🗑 تم حذف القائمة');
+}
+
+// ===== FILTER AUDIOS =====
+function filterAudios(filterVal) {
+  currentAudioFilter = filterVal;
+  const title = filterVal === 'all' ? 'الصوتيات' : ((audioPlaylists.find(l => l.id === filterVal) || {}).name || 'قائمة صوتية');
+  document.getElementById('audioSectionTitle').textContent = title;
+  renderAudioPlaylists();
+  renderAudios();
+  switchTab('audio');
+  closeSidebar();
+}
+
+// ===== AUDIO FILE OPTIONS (add to playlist / delete) =====
+function openAudioOptions(id) {
+  activeAudioId = String(id);
+  renderAudioPlaylistCheckList();
+  document.getElementById('audioOptionsModal').classList.add('open');
+}
+function closeAudioOptions() { document.getElementById('audioOptionsModal').classList.remove('open'); }
+
+function renderAudioPlaylistCheckList() {
+  const box = document.getElementById('audioPlaylistCheckList');
+  const audio = audios.find(a => String(a.id) === String(activeAudioId));
+  if (!audioPlaylists.length) {
+    box.innerHTML = '<div style="font-size:12px;color:var(--gray-4);padding:4px">مفيش قوائم صوتية لسه</div>';
+    return;
+  }
+  const ids = (audio && Array.isArray(audio.playlistIds)) ? audio.playlistIds : [];
+  box.innerHTML = audioPlaylists.map(l => {
+    const checked = ids.includes(l.id);
+    return `<div class="modal-item" onclick="toggleAudioPlaylistMembership('${l.id}')">
+      <span class="icon">${checked ? '✅' : '⬜'}</span> ${l.name}
+    </div>`;
+  }).join('');
+}
+
+async function toggleAudioPlaylistMembership(playlistId) {
+  const audio = audios.find(a => String(a.id) === String(activeAudioId));
+  if (!audio) return;
+  if (!Array.isArray(audio.playlistIds)) audio.playlistIds = [];
+  if (audio.playlistIds.includes(playlistId)) {
+    audio.playlistIds = audio.playlistIds.filter(pid => pid !== playlistId);
+  } else {
+    audio.playlistIds.push(playlistId);
+  }
+  await dbPut('audios', audio);
+  renderAudioPlaylistCheckList();
+  if (currentAudioFilter !== 'all') renderAudios();
+}
+
+async function deleteActiveAudio() {
+  closeAudioOptions();
+  const audio = audios.find(a => String(a.id) === String(activeAudioId));
+  if (!audio) return;
+  await dbDelete('audios', audio.id);
+  await idbDelete('file_' + audio.id).catch(()=>{});
+  audios = audios.filter(a => String(a.id) !== String(activeAudioId));
+  renderAudios();
+  showToast('🗑 تم حذف الملف الصوتي');
+}
+
+// ===== SEARCH =====
+function doSearch() {
+  const q = prompt('🔍 ابحث عن كتاب:');
+  if (!q) return;
+  const res = books.filter(b => b.name.toLowerCase().includes(q.toLowerCase()));
+  if (!res.length) { showToast('❌ لا نتائج لـ "' + q + '"'); return; }
+  switchTab('books');
+  document.getElementById('sectionTitle').textContent = 'نتائج البحث';
+  document.getElementById('bookCount').textContent = res.length + ' نتيجة';
+  const grid = document.getElementById('booksGrid');
+  grid.innerHTML = res.map(b => {
+    const cover = {pdf:'cover-pdf',word:'cover-word',excel:'cover-excel',epub:'cover-other',other:'cover-other'}[b.type]||'cover-other';
+    const icon  = {pdf:'📄',word:'📝',excel:'📊',epub:'📗',other:'📋'}[b.type]||'📋';
+    const ext   = (b.ext||b.type).toUpperCase();
+    return `<div class="book-card" onclick="openBook('${b.id}')">
+      <div class="book-cover ${cover}">${icon}<span class="cover-badge">${ext}</span></div>
+      <div class="book-info"><div class="book-title">${b.name}</div><div class="book-meta"><span>💾 ${b.size}</span>${b.fixed ? '<span class="fixed-badge">🩹 مُصحَّح</span>' : ''}</div></div>
+      <div class="book-actions">
+        <button class="book-btn btn-read" onclick="event.stopPropagation();openBook('${b.id}')">📖</button>
+        <button class="book-btn btn-fix" title="تصحيح الكتاب بالذكاء الاصطناعي" onclick="event.stopPropagation();fixBook('${b.id}')">🩹</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== AUDIO PLAYER =====
+let _currentAudioBlobUrl = null;
+let _pendingResumeSeconds = 0;
+let _lastPosSaveAt = 0;
+
+// حالة الاستماع: ✅ خلصه بالكامل | ♻️ لسه بيسمعه | ⭕ لسه ما اتسمعش
+function audioStatusIcon(a) {
+  if (a.completed) return '✅';
+  if (a.lastPosition && a.lastPosition > 5) return '♻️';
+  return '⭕';
+}
+
+// النسبة المئوية اللي سمعها من الملف
+function audioStatusPct(a) {
+  if (a.completed) return 100;
+  if (a.lastPosition && a.duration) return Math.min(99, Math.round((a.lastPosition / a.duration) * 100));
+  return 0;
+}
+
+// بيحفظ آخر موضع وصله المستخدم في الملف، وبيحدد لو خلصه بالكامل ولا لأ
+function saveAudioProgress(a, currentTime, duration) {
+  if (!a || !duration || isNaN(duration)) return;
+  const pct = (currentTime / duration) * 100;
+  const wasCompleted = !!a.completed;
+  if (pct >= 95) {
+    a.completed = true;
+    a.lastPosition = 0;
+  } else {
+    a.completed = false;
+    a.lastPosition = currentTime;
+  }
+  a.duration = duration;
+  dbPut('audios', a).catch(()=>{});
+  if (a.completed !== wasCompleted) renderAudios();
+}
+
+function saveCurrentProgress() {
+  const a = audios[audioIndex];
+  if (a && audioEl.duration) saveAudioProgress(a, audioEl.currentTime, audioEl.duration);
+}
+
+async function playAudio(i) {
+  audioIndex = i;
+  const a = audios[i];
+  document.getElementById('audioName').textContent = a.name;
+  document.getElementById('audioPlayer').classList.add('open');
+  document.getElementById('playBtn').textContent = '⏳';
+  updateAudioModeBtn();
+  updateSleepTimerBtn();
+
+  // لو الملف مكملش وفيه موضع محفوظ، نسأل المستخدم يستأنف ولا يبدأ من الأول
+  _pendingResumeSeconds = 0;
+  if (!a.completed && a.lastPosition && a.lastPosition > 5) {
+    const wantsResume = confirm('تحب تكمل من مكان ما وقفت (' + fmtTime(a.lastPosition) + ')؟\n\nاضغط "OK" للاستكمال، أو "إلغاء" عشان تبدأ من الأول.');
+    if (wantsResume) _pendingResumeSeconds = a.lastPosition;
+  }
+
+  try {
+    const fileRecord = await idbGet('file_' + a.id);
+    if (!fileRecord) throw new Error('الملف غير موجود');
+    if (_currentAudioBlobUrl) { URL.revokeObjectURL(_currentAudioBlobUrl); }
+    const mime = AUDIO_MIME[a.ext] || 'audio/mpeg';
+    const blob = new Blob([fileRecord.data], { type: mime });
+    _currentAudioBlobUrl = URL.createObjectURL(blob);
+    audioEl.src = _currentAudioBlobUrl;
+    await audioEl.play();
+    playing = true;
+    document.getElementById('playBtn').textContent = '⏸';
+  } catch(err) {
+    showToast('❌ تعذر تشغيل الملف');
+    document.getElementById('playBtn').textContent = '▶';
+  }
+}
+
+function togglePlay() {
+  if (playing) { audioEl.pause(); saveCurrentProgress(); document.getElementById('playBtn').textContent = '▶'; }
+  else         { audioEl.play();  document.getElementById('playBtn').textContent = '⏸'; }
+  playing = !playing;
+}
+
+function seekBy(s) { audioEl.currentTime = Math.max(0, audioEl.currentTime + s); }
+
+function prevTrack() { saveCurrentProgress(); if (audioIndex > 0) playAudio(audioIndex - 1); }
+function nextTrack() { saveCurrentProgress(); if (audioIndex < audios.length - 1) playAudio(audioIndex + 1); else closeAudio(); }
+
+function onAudioEnded() {
+  const a = audios[audioIndex];
+  if (a) {
+    a.completed = true;
+    a.lastPosition = 0;
+    dbPut('audios', a).catch(()=>{});
+  }
+  renderAudios();
+  if (audioPlayMode === 'one') {
+    // وضع "المقطع فقط": يوقف بعد ما يخلص المقطع الحالي، من غير ما ينتقل للتالي
+    playing = false;
+    document.getElementById('playBtn').textContent = '▶';
+  } else {
+    nextTrack();
+  }
+}
+
+// ===== وضع التشغيل: مقطع واحد فقط / كل المقاطع =====
+function updateAudioModeBtn() {
+  const btn = document.getElementById('audioModeBtn');
+  if (!btn) return;
+  if (audioPlayMode === 'one') {
+    btn.textContent = '🔂 مقطع واحد فقط';
+    btn.classList.add('active');
+  } else {
+    btn.textContent = '🔁 كل المقاطع';
+    btn.classList.remove('active');
+  }
+}
+
+function toggleAudioMode() {
+  audioPlayMode = audioPlayMode === 'all' ? 'one' : 'all';
+  localStorage.setItem('mk_audio_playmode', audioPlayMode);
+  updateAudioModeBtn();
+  showToast(audioPlayMode === 'one' ? '🔂 هيشغل المقطع الحالي ويوقف' : '🔁 هيشغل كل المقاطع بالترتيب');
+}
+
+// ===== مؤقت الإيقاف التلقائي (مؤقت نوم) =====
+function openSleepTimerModal() { document.getElementById('sleepTimerModal').classList.add('open'); }
+function closeSleepTimerModal() { document.getElementById('sleepTimerModal').classList.remove('open'); }
+
+function setSleepTimer(minutes) {
+  clearSleepTimerHandles();
+  const ms = Math.round(minutes * 60 * 1000);
+  _sleepTimerEndAt = Date.now() + ms;
+  _sleepTimerTimeout = setTimeout(() => {
+    audioEl.pause();
+    saveCurrentProgress();
+    playing = false;
+    document.getElementById('playBtn').textContent = '▶';
+    clearSleepTimerHandles();
+    updateSleepTimerBtn();
+    showToast('⏰ تم إيقاف التشغيل تلقائيًا (انتهى المؤقت)');
+  }, ms);
+  _sleepTimerInterval = setInterval(updateSleepTimerBtn, 1000);
+  updateSleepTimerBtn();
+  closeSleepTimerModal();
+  showToast('⏰ هيوقف التشغيل تلقائيًا بعد ' + minutes + ' دقيقة');
+}
+
+function promptCustomSleepTimer() {
+  const val = prompt('اكتب عدد الدقايق اللي عاوز المشغل يوقف بعدها:');
+  if (val === null) return;
+  const minutes = parseFloat(val);
+  if (!minutes || minutes <= 0) { showToast('⚠️ اكتب رقم دقايق صحيح'); return; }
+  setSleepTimer(minutes);
+}
+
+function cancelSleepTimer(notify = true) {
+  clearSleepTimerHandles();
+  updateSleepTimerBtn();
+  if (notify) { closeSleepTimerModal(); showToast('🚫 تم إلغاء المؤقت'); }
+}
+
+function clearSleepTimerHandles() {
+  if (_sleepTimerTimeout) clearTimeout(_sleepTimerTimeout);
+  if (_sleepTimerInterval) clearInterval(_sleepTimerInterval);
+  _sleepTimerTimeout = null;
+  _sleepTimerInterval = null;
+  _sleepTimerEndAt = null;
+}
+
+function updateSleepTimerBtn() {
+  const btn = document.getElementById('audioTimerBtn');
+  if (!btn) return;
+  if (_sleepTimerEndAt) {
+    const remaining = Math.max(0, Math.round((_sleepTimerEndAt - Date.now()) / 1000));
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    btn.textContent = '⏰ ' + m + ':' + (s < 10 ? '0' : '') + s;
+    btn.classList.add('active');
+  } else {
+    btn.textContent = '⏰ مؤقت إيقاف';
+    btn.classList.remove('active');
+  }
+}
+
+function onTimeUpdate() {
+  const pct = (audioEl.currentTime / audioEl.duration) * 100 || 0;
+  document.getElementById('audioFill').style.width = pct + '%';
+  document.getElementById('curTime').textContent = fmtTime(audioEl.currentTime);
+
+  const now = Date.now();
+  if (now - _lastPosSaveAt > 4000) { // نحفظ الموضع كل 4 ثواني تقريبًا، مش كل تحديث
+    _lastPosSaveAt = now;
+    saveCurrentProgress();
+  }
+}
+function onMetaLoaded() {
+  document.getElementById('durTime').textContent = fmtTime(audioEl.duration);
+  if (_pendingResumeSeconds > 0 && _pendingResumeSeconds < audioEl.duration) {
+    audioEl.currentTime = _pendingResumeSeconds;
+  }
+  _pendingResumeSeconds = 0;
+}
+
+function seekTo(e) {
+  const bar  = document.getElementById('audioBar');
+  const rect = bar.getBoundingClientRect();
+  const pct  = (e.clientX - rect.left) / rect.width;
+  audioEl.currentTime = pct * audioEl.duration;
+}
+
+function closeAudio() {
+  saveCurrentProgress();
+  audioEl.pause();
+  document.getElementById('audioPlayer').classList.remove('open');
+  playing = false;
+  document.getElementById('playBtn').textContent = '▶';
+  renderAudios();
+}
+
+function deleteAudio(i) {
+  if (!confirm('هتحذف الملف؟')) return;
+  const id = audios[i].id;
+  Promise.all([dbDelete('audios', id), idbDelete('file_' + id).catch(()=>{})]).then(() => {
+    audios.splice(i, 1);
+    renderAudios();
+    showToast('🗑 تم الحذف');
+  });
+}
+
+function fmtTime(s) {
+  if (!s || isNaN(s)) return '0:00';
+  return Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0');
+}
+
+// ===== TELEGRAM BACKUP =====
+let tgSettings = JSON.parse(localStorage.getItem('mk_tg') || '{}'); // { token, chatId, autoSync }
+
+function openTelegramSettings() {
+  document.getElementById('tgTokenInput').value = tgSettings.token || '';
+  document.getElementById('tgChatIdInput').value = tgSettings.chatId || '';
+  document.getElementById('tgAutoSyncCheckbox').checked = !!tgSettings.autoSync;
+  document.getElementById('tgBackupProgress').textContent = '';
+  document.getElementById('telegramModal').classList.add('open');
+}
+function closeTelegramModal() { document.getElementById('telegramModal').classList.remove('open'); }
+
+function saveTelegramSettings() {
+  const token  = document.getElementById('tgTokenInput').value.trim();
+  const chatId = document.getElementById('tgChatIdInput').value.trim();
+  const autoSync = document.getElementById('tgAutoSyncCheckbox').checked;
+  if (!token || !chatId) { showToast('⚠️ اكتب الـ Token والـ Chat ID الأول'); return; }
+  tgSettings = { token, chatId, autoSync };
+  localStorage.setItem('mk_tg', JSON.stringify(tgSettings));
+  showToast('✅ اتحفظت إعدادات تليجرام');
+}
+
+// بيبعت ملف واحد كـ Document لبوت تليجرام
+async function sendFileToTelegram(fileBlob, filename, captionText) {
+  if (!tgSettings.token || !tgSettings.chatId) return false;
+  try {
+    const form = new FormData();
+    form.append('chat_id', tgSettings.chatId);
+    form.append('document', fileBlob, filename);
+    if (captionText) form.append('caption', captionText);
+    const url = 'https://api.telegram.org/bot' + tgSettings.token + '/sendDocument';
+    const res  = await fetch(url, { method: 'POST', body: form });
+    const data = await res.json();
+    return !!data.ok;
+  } catch (err) {
+    console.error('Telegram send error', err);
+    return false;
+  }
+}
+
+// نسخة احتياطية كاملة لكل الكتب والصوتيات المرفوعة قبل كده
+async function backupAllToTelegram() {
+  if (!tgSettings.token || !tgSettings.chatId) { showToast('⚠️ اضبط إعدادات تليجرام الأول واحفظها'); return; }
+  const progressEl = document.getElementById('tgBackupProgress');
+  const allItems = [
+    ...books.map(b => ({ kind: 'book', item: b })),
+    ...audios.map(a => ({ kind: 'audio', item: a }))
+  ];
+  if (!allItems.length) { progressEl.textContent = 'مفيش ملفات لنسخها.'; return; }
+
+  let done = 0, failed = 0;
+  for (const { kind, item } of allItems) {
+    progressEl.textContent = 'جارٍ الإرسال... (' + (done + failed + 1) + '/' + allItems.length + ')';
+    try {
+      const fileRecord = await idbGet('file_' + item.id);
+      if (!fileRecord) throw new Error('missing');
+      const ext = fileRecord.type || item.ext;
+      const filename = item.name + '.' + ext;
+      const caption = (kind === 'book' ? '📚 ' : '🎵 ') + item.name;
+      const ok = await sendFileToTelegram(fileRecord.data, filename, caption);
+      if (ok) done++; else failed++;
+    } catch (err) {
+      failed++;
+    }
+    await new Promise(r => setTimeout(r, 700)); // تأخير بسيط عشان مانضربش حدود تليجرام
+  }
+  progressEl.textContent = '✅ خلص: ' + done + ' نجح' + (failed ? '، ❌ فشل: ' + failed : '');
+  showToast('✅ النسخة الاحتياطية على تليجرام خلصت');
+}
+
+// ===== AI BOOK CORRECTION (تصحيح الكتاب بالذكاء الاصطناعي) =====
+// المستخدم بيحط مفتاح Claude API بتاعه بنفسه (بيتخزن محليًا بس)، والتطبيق بيبعت النص المستخرج
+// من الكتاب مباشرة لـ Anthropic عشان يصلح الحروف الملخبطة والترميز التالف والعربي الغير متناسق.
+let aiSettings = JSON.parse(localStorage.getItem('mk_ai') || '{}'); // { apiKey }
+let fixQueue   = [];   // قائمة انتظار الكتب اللي محتاجة تصحيح
+let fixRunning = false;
+let _currentFixId = null;
+
+function openAiSettings() {
+  document.getElementById('aiKeyInput').value = aiSettings.apiKey || '';
+  document.getElementById('aiSettingsModal').classList.add('open');
+}
+function closeAiSettings() { document.getElementById('aiSettingsModal').classList.remove('open'); }
+function saveAiSettings() {
+  const key = document.getElementById('aiKeyInput').value.trim();
+  if (!key) { showToast('⚠️ اكتب مفتاح الـ API الأول'); return; }
+  aiSettings = { apiKey: key };
+  localStorage.setItem('mk_ai', JSON.stringify(aiSettings));
+  closeAiSettings();
+  showToast('✅ اتحفظ مفتاح الذكاء الاصطناعي');
+}
+
+function fixActiveBook() { closeBookMenu(); fixBook(activeBookId); }
+
+// بيضيف الكتاب لقائمة انتظار التصحيح ويبدأ المعالجة في الخلفية
+function fixBook(id) {
+  if (!aiSettings.apiKey) {
+    showToast('⚠️ محتاج تحط مفتاح الذكاء الاصطناعي الأول (زر 🤖 فوق)');
+    openAiSettings();
+    return;
+  }
+  const book = books.find(b => String(b.id) === String(id));
+  if (!book) { showToast('❌ الكتاب غير موجود'); return; }
+  if (book.type === 'excel') { showToast('⚠️ تصحيح ملفات Excel مش مدعوم حاليًا'); return; }
+  if (fixRunning && String(_currentFixId) === String(book.id)) { showToast('⏳ الكتاب ده بيتصحح دلوقتي بالفعل'); return; }
+  if (fixQueue.some(j => String(j.id) === String(book.id))) { showToast('⏳ الكتاب ده في قائمة انتظار التصحيح بالفعل'); return; }
+  if (book.fixed && !confirm('الكتاب ده اتصحح قبل كده. عايز تصححه تاني؟')) return;
+
+  fixQueue.push({ id: book.id, name: book.name });
+  showToast('🩹 "' + book.name + '" اتضاف لقائمة التصحيح');
+  processFixQueue();
+}
+
+function processFixQueue() {
+  if (fixRunning) return;
+  const job = fixQueue.shift();
+  if (!job) return;
+  runFixJob(job);
+}
+
+// تقسيم النص لقطع صغيرة (على حدود الفقرات قدر الإمكان) عشان ترسل للذكاء الاصطناعي على دفعات
+function splitIntoChunks(text, maxLen) {
+  const paras = text.split(/\n+/);
+  const chunks = [];
+  let cur = '';
+  for (let p of paras) {
+    while (p.length > maxLen) { // فقرة أطول من الحد الأقصى لوحدها
+      if (cur) { chunks.push(cur); cur = ''; }
+      chunks.push(p.slice(0, maxLen));
+      p = p.slice(maxLen);
+    }
+    if ((cur + '\n' + p).length > maxLen && cur) {
+      chunks.push(cur);
+      cur = p;
+    } else {
+      cur = cur ? cur + '\n' + p : p;
+    }
+  }
+  if (cur) chunks.push(cur);
+  return chunks.length ? chunks : [text];
+}
+
+// نداء API لـ Claude لتصحيح قطعة نص واحدة
+async function callClaudeFix(text) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': aiSettings.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-5',
+      max_tokens: 4096,
+      system: 'انت متخصص في تصحيح النصوص العربية التالفة (حروف ملخبطة، رموز غريبة، ترميز خاطئ، كلام غير متناسق) الناتجة عن استخراج أو تحويل سيء لملف كتاب. رجّع نفس النص بعد تصحيحه ليكون عربي سليم ومقروء، من غير ما تضيف أو تحذف أو تلخص أي معنى، ومن غير أي مقدمات أو تعليقات أو شرح — رجّع النص المصحح فقط ولا حاجة غيره.',
+      messages: [ { role: 'user', content: 'صحح النص التالي:\n\n' + text } ]
+    })
+  });
+  if (!res.ok) {
+    let msg = 'فشل الاتصال بالذكاء الاصطناعي (' + res.status + ')';
+    try { const errData = await res.json(); if (errData?.error?.message) msg = errData.error.message; } catch(e) {}
+    throw new Error(msg);
+  }
+  const data = await res.json();
+  const out = (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n').trim();
+  if (!out) throw new Error('مفيش رد من الذكاء الاصطناعي');
+  return out;
+}
+
+function showFixWidget() { document.getElementById('fixProgressWidget').style.display = 'flex'; }
+function hideFixWidgetIfIdle() {
+  if (!fixRunning && !fixQueue.length) document.getElementById('fixProgressWidget').style.display = 'none';
+}
+function updateFixWidget(name, pct, status) {
+  const w = document.getElementById('fixProgressWidget');
+  w.innerHTML = `
+    <div style="font-size:20px">🩹</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:12px;font-weight:800;color:var(--blue-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+      <div style="font-size:10px;color:var(--gray-4);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${status}</div>
+      <div style="background:var(--gray-2);border-radius:99px;height:5px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#8e24aa,#ab47bc);border-radius:99px;transition:width .3s"></div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:800;color:#8e24aa">${pct}%</div>`;
+}
+
+async function runFixJob(job) {
+  fixRunning = true;
+  _currentFixId = job.id;
+  showFixWidget();
+  updateFixWidget(job.name, 0, 'جارٍ تجهيز الملف...');
+
+  try {
+    const book = books.find(b => String(b.id) === String(job.id));
+    if (!book) throw new Error('الكتاب اتحذف من المكتبة');
+    const fileRecord = await idbGet('file_' + book.id);
+    if (!fileRecord) throw new Error('الملف غير موجود');
+    const fileBuf = await getFileArrayBuffer(fileRecord);
+
+    // بنحتفظ بنسخة من الملف الأصلي (البايظ) كباك أب قبل أي تعديل — مرة واحدة بس
+    const existingBackup = await idbGet('file_backup_' + book.id).catch(() => null);
+    if (!existingBackup) await idbSave('file_backup_' + book.id, fileRecord);
+
+    // ===== استخراج النص من الملف حسب نوعه =====
+    let rawText = '';
+    if (book.type === 'pdf') {
+      updateFixWidget(job.name, 2, 'جارٍ فتح ملف PDF...');
+      const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(fileBuf) }).promise;
+      const total = pdf.numPages;
+      for (let i = 1; i <= total; i++) {
+        const page = await pdf.getPage(i);
+        const tc = await page.getTextContent();
+        rawText += tc.items.map(it => it.str).join(' ') + '\n\n';
+        updateFixWidget(job.name, Math.round((i / total) * 15), 'جارٍ استخراج النص... صفحة ' + i + '/' + total);
+      }
+    } else if (book.type === 'word') {
+      updateFixWidget(job.name, 8, 'جارٍ استخراج النص من Word...');
+      const result = await mammoth.extractRawText({ arrayBuffer: fileBuf });
+      rawText = result.value || '';
+    } else {
+      updateFixWidget(job.name, 8, 'جارٍ قراءة الملف...');
+      rawText = new TextDecoder('utf-8').decode(fileBuf);
+    }
+
+    rawText = (rawText || '').trim();
+    if (!rawText) throw new Error('مفيش نص ممكن استخراجه من الملف ده');
+
+    // ===== تصحيح النص على دفعات بالذكاء الاصطناعي =====
+    const chunks = splitIntoChunks(rawText, 4000);
+    let fixedText = '';
+    for (let i = 0; i < chunks.length; i++) {
+      const pct = 15 + Math.round((i / chunks.length) * 80);
+      updateFixWidget(job.name, pct, 'جارٍ التصحيح بالذكاء الاصطناعي... (' + (i + 1) + '/' + chunks.length + ')');
+      const fixedChunk = await callClaudeFix(chunks[i]);
+      fixedText += (fixedText ? '\n\n' : '') + fixedChunk;
+    }
+
+    updateFixWidget(job.name, 97, 'جارٍ حفظ النسخة المصححة...');
+
+    // ===== حفظ النسخة المصححة في نفس مكان الملف (نفس الـ id) من غير تغيير الاسم أو التصنيف =====
+    const fixedBlob = new Blob([fixedText], { type: 'text/plain;charset=utf-8' });
+    await idbSave('file_' + book.id, { data: fixedBlob, type: 'txt' });
+
+    book.fixed = true;
+    book.fixedAt = Date.now();
+    if (!book.originalExt)  book.originalExt  = book.ext;
+    if (!book.originalType) book.originalType = book.type;
+    book.ext  = 'txt';
+    book.type = 'other';
+    await dbPut('books', book);
+
+    updateFixWidget(job.name, 100, '✅ تم التصحيح بنجاح!');
+    showToast('✅ "' + job.name + '" اتصحح وجاهز للقراءة');
+    renderBooks();
+
+    // فتح الكتاب في نفس مكانه بعد التصحيح — إلا لو المستخدم فاتح كتاب تاني دلوقتي في القارئ
+    const readerOpen = document.getElementById('readerOverlay').classList.contains('open');
+    if (!readerOpen || String(activeBookId) === String(book.id)) {
+      openBook(book.id);
+    } else {
+      showToast('✅ "' + job.name + '" جاهز — دوس عليه في المكتبة عشان تفتحه');
+    }
+
+    setTimeout(hideFixWidgetIfIdle, 2500);
+  } catch (err) {
+    updateFixWidget(job.name, 0, '❌ فشل: ' + err.message);
+    showToast('❌ فشل تصحيح "' + job.name + '": ' + err.message);
+    setTimeout(hideFixWidgetIfIdle, 4000);
+    console.error(err);
+  } finally {
+    fixRunning = false;
+    _currentFixId = null;
+    processFixQueue();
+  }
+}
+
+// استرجاع النسخة الأصلية (البايظة) قبل التصحيح، لو حابب ترجع لها
+async function restoreOriginalBook(id) {
+  closeBookMenu();
+  const book = books.find(b => String(b.id) === String(id));
+  if (!book || !book.fixed) return;
+  const backup = await idbGet('file_backup_' + book.id).catch(() => null);
+  if (!backup) { showToast('❌ مفيش نسخة أصلية محفوظة لهذا الكتاب'); return; }
+  await idbSave('file_' + book.id, backup);
+  book.type = book.originalType || book.type;
+  book.ext  = book.originalExt  || book.ext;
+  delete book.fixed;
+  delete book.fixedAt;
+  await dbPut('books', book);
+  renderBooks();
+  showToast('↩️ رجّعنا النسخة الأصلية لـ "' + book.name + '"');
+}
+
+// ===== FULL LOCAL BACKUP (EXPORT / IMPORT) =====
+// ده بيصدّر كل حاجة: الكتب، الصوتيات، القوائم، نسب الاستماع، إعدادات تليجرام...
+// المهم إنك تحفظ كل الملفات اللي بتتنزل مع بعض في نفس المكان (فلاشة/درايف)
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function exportFullBackup() {
+  if (!books.length && !audios.length) { showToast('⚠️ مفيش كتب أو صوتيات لسه'); return; }
+  showToast('⬇️ جارٍ تجهيز النسخة الاحتياطية، هتتنزل كذا ملف...');
+
+  const meta = {
+    exportedAt: Date.now(),
+    books, audios, customLists, audioPlaylists, positions, tgSettings
+  };
+  downloadBlob(new Blob([JSON.stringify(meta, null, 2)], { type: 'application/json' }), 'مكتبتي_backup_meta.json');
+  await sleep(400);
+
+  for (const b of books) {
+    const rec = await idbGet('file_' + b.id).catch(()=>null);
+    if (rec) { downloadBlob(rec.data, 'book_' + b.id + '.' + (rec.type || b.ext)); await sleep(350); }
+  }
+  for (const a of audios) {
+    const rec = await idbGet('file_' + a.id).catch(()=>null);
+    if (rec) { downloadBlob(rec.data, 'audio_' + a.id + '.' + (rec.type || a.ext)); await sleep(350); }
+  }
+  showToast('✅ خلصت! احفظ كل الملفات اللي اتنزلت مع بعض في نفس المكان (فلاشة/درايف)');
+}
+
+document.getElementById('importBackupInput').addEventListener('change', async function (e) {
+  const files = Array.from(e.target.files);
+  e.target.value = '';
+  if (!files.length) return;
+
+  const metaFile = files.find(f => f.name.endsWith('.json'));
+  if (!metaFile) { showToast('⚠️ محتاج تختار ملف "مكتبتي_backup_meta.json" مع باقي الملفات مع بعض'); return; }
+
+  let meta;
+  try { meta = JSON.parse(await metaFile.text()); }
+  catch (err) { showToast('❌ ملف الميتاداتا تالف أو مش سليم'); return; }
+
+  showToast('⬆️ جارٍ استرجاع النسخة الاحتياطية...');
+  const fileMap = {};
+  files.forEach(f => { fileMap[f.name] = f; });
+
+  let restoredBooks = 0, restoredAudios = 0, missing = 0;
+
+  for (const b of (meta.books || [])) {
+    const f = fileMap['book_' + b.id + '.' + b.ext];
+    if (!f) { missing++; continue; }
+    await idbSave('file_' + b.id, { data: f, type: b.ext });
+    await dbPut('books', b);
+    restoredBooks++;
+  }
+  for (const a of (meta.audios || [])) {
+    const f = fileMap['audio_' + a.id + '.' + a.ext];
+    if (!f) { missing++; continue; }
+    await idbSave('file_' + a.id, { data: f, type: a.ext });
+    await dbPut('audios', a);
+    restoredAudios++;
+  }
+
+  if (Array.isArray(meta.customLists))    { customLists = meta.customLists;    localStorage.setItem('mk_lists', JSON.stringify(customLists)); }
+  if (Array.isArray(meta.audioPlaylists)) { audioPlaylists = meta.audioPlaylists; localStorage.setItem('mk_audio_lists', JSON.stringify(audioPlaylists)); }
+  if (meta.positions)  { positions  = meta.positions;  localStorage.setItem('mk_pos', JSON.stringify(positions)); }
+  if (meta.tgSettings) { tgSettings = meta.tgSettings; localStorage.setItem('mk_tg', JSON.stringify(tgSettings)); }
+
+  books  = await dbGetAll('books');
+  audios = await dbGetAll('audios');
+  books.sort((a,b) => b.addedAt - a.addedAt);
+  sortAudios();
+  renderBooks();
+  renderAudios();
+  renderCustomLists();
+  renderAudioPlaylists();
+
+  showToast('✅ استرجعت ' + restoredBooks + ' كتاب و' + restoredAudios + ' ملف صوتي' + (missing ? ' — ' + missing + ' ملف ناقص من اللي اخترتهم' : ''));
+});
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+
+<script>
+(function(){
+const LS='mk_prefs',FONTS=[['أميري',"'Amiri',serif"],['نسخ',"'Noto Naskh Arabic',serif"],['شهرزاد',"'Scheherazade New',serif"],['القاهرة',"'Cairo',sans-serif"],['تجوال',"'Tajawal',sans-serif"],['كوفي',"'Reem Kufi',cursive"],['لطيف',"'Lateef',serif"],['مونو','monospace']];
+const THEMES={green:'#5a9a3a',blue:'#1565c0',purple:'#7b3fb0',brown:'#7a5548',teal:'#00838f',rose:'#ad2d58'};
+const CATS='العقيدة|الفرق والردود|التفسير|علوم القرآن وأصول التفسير|التجويد والقراءات|كتب السنة|شروح الحديث|التخريج والأطراف|العلل والسؤلات الحديثية|علوم الحديث|أصول الفقه|علوم الفقه والقواعد الفقهية|المنطق|الفقه الحنفي|الفقه المالكي|الفقه الشافعي|الفقه الحنبلي|الفقه العام|مسائل فقهية|السياسة الشرعية والقضاء|الفرائض والوصايا|الفتاوى|الرقائق والآداب والأذكار|السيرة النبوية|التاريخ|التراجم والطبقات|الأنساب|البلدان والرحلات|كتب اللغة|الغريب والمعاجم|النحو والصرف|الأدب|العروض والقوافي|الشعر ودواوينه|البلاغة|الجوامع|فهارس الكتب والأدلة|الطب|كتب عامة|علوم أخرى'.split('|');
+let P=Object.assign({theme:'green',font:FONTS[0][1],size:null,color:'#1f2d17',bg:'#fffdf2',lh:2,proxies:['https://corsproxy.io/?url={url}','https://api.allorigins.win/raw?url={url}','https://api.codetabs.com/v1/proxy?quest={url}','https://thingproxy.freeboard.io/fetch/{url}'],sources:[{name:'المكتبة الشاملة',url:'https://shamela.ws/'}],pageBg:'',head:''},JSON.parse(localStorage.getItem(LS)||'{}'));
+const save=()=>localStorage.setItem(LS,JSON.stringify(P));
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function applyTheme(){const d=document.documentElement,r=d.style;d.dataset.theme=P.theme;P.pageBg?r.setProperty('--gray-1',P.pageBg):r.removeProperty('--gray-1');['--blue-dark','--blue-mid'].forEach(k=>P.head?r.setProperty(k,P.head):r.removeProperty(k))}
+function applyPrefs(){const c=$('readerContent');if(!c||c.dataset.raw)return;c.style.fontFamily=P.font;c.style.color=P.color;c.style.background=P.bg;c.style.lineHeight=P.lh;$('readerOverlay').style.background=P.bg}
+applyTheme();if(P.size)fontSize=P.size;
+const _arf=window.applyReaderFont;
+window.applyReaderFont=function(){_arf();applyPrefs()};
+window.chgFontSize=d=>{fontSize=Math.max(10,Math.min(60,fontSize+d));P.size=fontSize;save();applyReaderFont()};
+window.chgFontFamily=v=>{P.font=v;save();applyPrefs()};
+window.chgTextColor=(c,el)=>{P.color=c;save();applyPrefs();if(el){document.querySelectorAll('.reader-toolbar .color-dot').forEach(d=>d.classList.remove('sel'));el.classList.add('sel')}};
+window.chgBg=c=>{P.bg=c;save();applyPrefs()};
+window.chgLH=d=>{P.lh=Math.max(1.4,Math.min(3,+(P.lh+d).toFixed(1)));save();applyPrefs()};
+window.toggleLandscape=async()=>{try{const o=$('readerOverlay');if(!document.fullscreenElement)await o.requestFullscreen();await screen.orientation.lock(screen.orientation.type.startsWith('landscape')?'portrait':'landscape')}catch(e){showToast('لف الجهاز بإيدك وفعّل التدوير التلقائي من إعدادات الهاتف')}};
+// ---- أنواع الملفات
+const X={text:'txt md log json xml html htm rtf srt',image:'jpg jpeg png gif webp bmp svg',media:'mp3 mp4 m4a wav ogg aac webm mkv mov avi flac',word:'doc docx',excel:'xls xlsx ods csv',epub:'epub',pdf:'pdf'};
+window.getType=n=>{const e=getExt(n);for(const k in X)if(X[k].split(' ').includes(e))return k;return 'other'};
+const dec=b=>{try{return new TextDecoder('utf-8',{fatal:true}).decode(b)}catch(e){return new TextDecoder('windows-1256').decode(b)}};
+const paras=t=>esc(t).split('\n').map(l=>'<p>'+(l||'&nbsp;')+'</p>').join('');
+const clean=d=>{d.querySelectorAll('script,style,link,img,svg,iframe').forEach(e=>e.remove());d.querySelectorAll('*').forEach(e=>[...e.attributes].forEach(a=>{if(/^on/i.test(a.name))e.removeAttribute(a.name)}));return d};
+async function epubHTML(buf){const z=await JSZip.loadAsync(buf),rd=p=>z.file(p).async('string'),X2=s=>new DOMParser().parseFromString(s,'application/xml');
+const op=X2(await rd('META-INF/container.xml')).querySelector('rootfile').getAttribute('full-path'),base=op.replace(/[^/]*$/,''),opf=X2(await rd(op)),man={};
+opf.querySelectorAll('manifest item').forEach(i=>man[i.getAttribute('id')]=i.getAttribute('href'));let out='';
+for(const r of opf.querySelectorAll('spine itemref')){const h=man[r.getAttribute('idref')];const f=h&&z.file(decodeURIComponent(base+h));if(!f)continue;const d=clean(new DOMParser().parseFromString(await f.async('string'),'text/html'));out+=d.body.innerHTML+'<hr>'}return out}
+const dlBox=(b,u)=>`<div style="text-align:center;padding:40px 16px"><div style="font-size:60px">📄</div><p style="font-weight:800;margin:10px 0">${esc(b.name)}</p><p style="font-size:13px;opacity:.7;margin-bottom:16px">الصيغة ${esc(b.ext)} مش قابلة للعرض النصي</p><a class="btn" style="text-decoration:none;display:inline-block" href="${u}" download="${esc(b.name)}.${esc(b.ext)}">⬇️ تحميل / فتح بتطبيق آخر</a></div>`;
+const _ob=window.openBook;
+window.openBook=async function(id){
+ const b=books.find(x=>String(x.id)===String(id));if(OL)OL.show=0;if(b&&b.type==='online')return openOnlineBook(b);if(!b||b.type==='pdf'||b.type==='word')return _ob(id);
+ activeBookId=b.id;$('readerTitle').textContent=b.name;$('readerOverlay').classList.add('open');applyReaderFont();
+ const c=$('readerContent');c.style.padding='24px 20px';c.style.overflow='auto';c.dataset.raw='';
+ $('readerToolbar').style.display='flex';c.innerHTML='<p style="text-align:center">⏳ جارٍ التحميل...</p>';
+ try{const rec=await idbGet('file_'+b.id);if(!rec)throw new Error('الملف غير موجود');const buf=await getFileArrayBuffer(rec),blob=new Blob([buf]),u=URL.createObjectURL(blob);
+  if(b.type==='epub'){c.innerHTML=await epubHTML(buf)}
+  else if(b.type==='excel'){const w=XLSX.read(buf);c.innerHTML=w.SheetNames.map(n=>'<h3>'+esc(n)+'</h3><div style="overflow:auto">'+XLSX.utils.sheet_to_html(XLSX.utils.sheet_to_json?w.Sheets[n]:w.Sheets[n])+'</div>').join('');c.querySelectorAll('td,th').forEach(t=>t.style.cssText='border:1px solid #bbb;padding:4px 8px')}
+  else if(b.type==='image'){c.dataset.raw=1;c.innerHTML=`<img src="${u}" style="max-width:100%;display:block;margin:auto">`}
+  else if(b.type==='media'){c.dataset.raw=1;c.innerHTML=`<video controls src="${u}" style="width:100%;max-height:100%"></video>`}
+  else{const head=new Uint8Array(buf.slice(0,3000));if(b.type==='other'&&head.includes(0)){c.innerHTML=dlBox(b,u)}
+   else if(['html','htm'].includes(b.ext)){c.innerHTML=clean(new DOMParser().parseFromString(dec(buf),'text/html')).body.innerHTML}
+   else c.innerHTML=paras(dec(buf))}
+  applyPrefs()}catch(e){c.innerHTML='<p style="color:#c62828;text-align:center">⚠ تعذر الفتح: '+esc(e.message)+'</p>'}
+};
+// ---- الشبكة
+async function net(url,blob){const T=[url,...(P.proxies||[]).filter(Boolean).map(t=>t.includes('{url}')?t.replace('{url}',encodeURIComponent(url)):t+encodeURIComponent(url))],errs=[];
+ for(const u of T){try{const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return blob?await r.blob():await r.text()}catch(e){errs.push((u===url?'مباشر':new URL(u).host)+': '+e.message)}}
+ throw new Error('فشلت كل الطرق | '+errs.join(' | '))}
+const parse=h=>new DOMParser().parseFromString(h,'text/html');
+function pageText(d){const A=d.querySelectorAll('a[href^="#p"]');let el;
+ if(A.length){el=A[0].parentElement;while(el.parentElement&&el.querySelectorAll('a[href^="#p"]').length<A.length)el=el.parentElement}else el=d.querySelector('.nass,article,main')||d.body;
+ el.querySelectorAll('a[href^="#p"],script,style,nav,header,footer,button,select').forEach(e=>e.remove());el.querySelectorAll('br').forEach(b=>b.replaceWith('\n'));el.querySelectorAll('p,div,h1,h2,h3,h4,h5,h6').forEach(p=>p.append('\n'));
+ return el.textContent.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim()}
+// ---- واجهة المصادر
+const mk=(id,t,top)=>{let o=$(id);if(!o){o=document.createElement('div');o.id=id;o.className='ov'+(top?' top':'');o.innerHTML=`<div class="ov-h"><button class="btn-icon" onclick="this.closest('.ov').classList.remove('open')">✕</button><b></b></div><div class="ov-b"></div>`;document.body.appendChild(o)}o.querySelector('b').textContent=t;o.classList.add('open');return o.querySelector('.ov-b')};
+let stack=[];
+window.openSources=function(){const b=mk('srcOv','تصفح المصادر');stack=[];b.innerHTML='<div class="chips">'+P.sources.map((s,i)=>`<div class="chip" onclick="pickSource(${i})">${esc(s.name)}</div>`).join('')+'<div class="chip" onclick="openImport()">🔗 لصق رابط / سحب ملفات</div></div><p style="margin-top:14px;opacity:.7;font-size:13px">لإضافة موقع جديد: الإعدادات ← المصادر</p>'};
+window.pickSource=i=>{const s=P.sources[i];if(/shamela\.ws/.test(s.url)){const b=mk('srcOv',s.name);b.innerHTML='<div class="chips">'+CATS.map((c,k)=>`<div class="chip" onclick="browse('https://shamela.ws/category/${k+1}','${esc(c)}')">${esc(c)}</div>`).join('')+'</div>'}else browse(s.url,s.name)};
+window.browse=async(url,title)=>{const b=mk('srcOv',title);b.innerHTML='<p style="text-align:center">⏳ جارٍ التحميل...</p>';
+ try{const d=parse(await net(url)),sh=/shamela\.ws/.test(url),seen={},L=[];
+  d.querySelectorAll('a[href]').forEach(a=>{let h;try{h=new URL(a.getAttribute('href'),url)}catch(e){return}const t=a.textContent.trim().replace(/\s+/g,' ');
+   if(sh?!/\/book\/\d+$/.test(h.pathname):(h.host!==new URL(url).host||t.length<4))return;if(!t||seen[h.href])return;seen[h.href]=1;L.push([t,h.href])});
+  b.innerHTML=`<input placeholder="ابحث في القائمة..." oninput="document.querySelectorAll('#srcOv .li').forEach(x=>x.style.display=x.textContent.includes(this.value)?'':'none')"><p style="margin:8px 0;font-size:13px">${L.length} عنصر</p>`+L.map(([t,h])=>`<div class="li" data-h="${esc(h)}" data-t="${esc(t)}">${esc(t)}</div>`).join('');
+  b.querySelectorAll('.li').forEach(e=>e.onclick=()=>{const m=e.dataset.h.match(/\/book\/(\d+)$/);m&&sh?readOnline({id:m[1],name:e.dataset.t,n:1}):readOnline({url:e.dataset.h,name:e.dataset.t})})
+ }catch(e){b.innerHTML='<p style="color:#c62828">تعذر التحميل ('+esc(e.message)+'). جرّب 📥 سحب ملفات ← اختبار الاتصال.</p>'}};
+let OL=null;window.getOL=()=>OL;
+const meta=d=>{const r=new RegExp('/book/'+OL.id+'/(\\d+)'),toc=[],seen={};let max=0;
+ d.querySelectorAll('a[href]').forEach(a=>{const m=(a.getAttribute('href')||'').match(r);if(!m)return;const n=+m[1];max=Math.max(max,n);const t=a.textContent.trim().replace(/^-/,'');if(t.length>1&&!/^[<>\s]+$/.test(t)&&!seen[n]){seen[n]=1;toc.push([t,n])}});
+ const p=d.querySelector('a[href*="pdfjs.html?file="]');if(p){try{OL.pdf=new URL(p.getAttribute('href'),'https://ready.shamela.ws/').searchParams.get('file')}catch(e){}}
+ if(max>(OL.total||0))OL.total=max;if(toc.length>(OL.toc||[]).length)OL.toc=toc.sort((x,y)=>x[1]-y[1])};
+window.readOnline=async o=>{OL=OL&&OL.id===o.id&&o.id?OL:Object.assign(o,{pages:{}});OL.n=o.n||OL.n||1;
+ activeBookId=null;OL.show=1;$('readerTitle').textContent=OL.name;$('readerOverlay').classList.add('open');applyReaderFont();$('readerToolbar').style.display='flex';
+ const c=$('readerContent');c.dataset.raw='';c.style.padding='24px 20px';c.style.overflow='auto';c.innerHTML='<p style="text-align:center">⏳ جارٍ التحميل...</p>';
+ try{const u=OL.id?`https://shamela.ws/book/${OL.id}/${OL.n}`:OL.url;
+  if(!OL.pages[OL.n]){const d=parse(await net(u));if(OL.id)meta(d);OL.pages[OL.n]=pageText(d)}
+  const row=OL.id?`<div class="olnav"><button class="btn" onclick="olGo(1)">◀ التالي</button><input type="number" value="${OL.n}" style="width:80px;text-align:center" onchange="olGo(0,this.value)"><span style="font-size:12px">/ ${OL.total||'؟'}</span><button class="btn" onclick="olGo(-1)">السابق ▶</button></div>`:'';
+  const tools=OL.id?`<div class="olnav" style="flex-wrap:wrap">${OL.toc&&OL.toc.length?'<button class="btn l" onclick="olToc()">📑 الفهرس</button>':''}${OL.pdf?'<button class="btn l" onclick="olPdf()">📄 سحب PDF</button>':''}<button class="btn l" onclick="olPhone()">💾 على الهاتف</button><button class="btn l" id="olAllBtn" onclick="olAll()">⬇️ تحميل الكتاب كامل</button></div>`:'';
+  c.innerHTML=tools+row+paras(OL.pages[OL.n])+row+'<div class="olx" style="text-align:center"><button class="btn" onclick="olSave()">💾 حفظ الصفحات المحمّلة</button></div>';applyPrefs();c.scrollTop=0}
+ catch(e){c.innerHTML='<p style="color:#c62828;text-align:center;direction:rtl">⚠ '+esc(e.message)+'<br><br><button class="btn" onclick="openImport()">📥 طرق بديلة للسحب</button></p>'}};
+window.olGo=(d,v)=>{OL.n=v?Math.max(1,+v):Math.max(1,OL.n+d);readOnline(OL)};
+window.olSave=async()=>{const ks=Object.keys(OL.pages).map(Number).sort((a,b)=>a-b),txt=ks.map(k=>PGM(k,OL.pages[k])).join('\n\n');const blob=new Blob([txt],{type:'text/plain'}),id=Date.now()+'_'+Math.random().toString(36).slice(2);
+ const bk={id,name:OL.name,ext:'txt',type:'text',size:fmtSize(blob.size),addedAt:Date.now(),dateStr:new Date().toLocaleDateString('ar-EG'),category:'all',progress:0};
+ await idbSave('file_'+id,{data:blob,type:'txt'});await dbPut('books',bk);books.unshift(bk);renderBooks();showToast('✅ اتحفظ '+ks.length+' صفحة في مكتبتك')};
+
+const MT={'application/pdf':'pdf','application/epub+zip':'epub','text/plain':'txt','text/html':'html','application/vnd.openxmlformats-officedocument.wordprocessingml.document':'docx','application/msword':'doc'};
+async function saveBlob(name,blob,ext){const id=Date.now()+'_'+Math.random().toString(36).slice(2),bk={id,name,ext,type:getType('x.'+ext),size:fmtSize(blob.size),addedAt:Date.now(),dateStr:new Date().toLocaleDateString('ar-EG'),category:'all',progress:0};
+ await idbSave('file_'+id,{data:blob,type:ext});await dbPut('books',bk);books.unshift(bk);renderBooks();showToast('✅ اتحفظ "'+name+'"')}
+const out=(m,ok)=>{$('impOut').innerHTML=m;$('impOut').style.color=ok?'#2e7d32':'#c62828'};
+window.openImport=function(){const b=mk('impOv','📥 طرق سحب الملفات',true);
+ const bm="javascript:(()=>{const t=(document.querySelector('.nass')||document.body).innerText;navigator.clipboard.writeText(t).then(()=>alert('تم نسخ الصفحة'))})()";
+ b.innerHTML=`<div id="impOut" style="font-size:13px;margin-bottom:8px;line-height:1.8"></div>
+ <div class="sec">🔗 الصق رابط صفحة كتب وأنا أسحبها وأصنّفها</div><p style="font-size:12px;opacity:.75">مثال: رابط قسم من الشاملة (shamela.ws/category/3) أو صفحة كتاب أو مؤلف، أو أي صفحة فيها روابط PDF / EPUB / DOCX.</p><input id="hu" dir="ltr" placeholder="https://shamela.ws/category/3"><div class="row"><button class="btn l" onclick="navigator.clipboard.readText().then(t=>{$('hu').value=t.trim()}).catch(()=>{})">📋 لصق</button><button class="btn" onclick="harvest()">🔍 اسحب الكتب</button></div><div id="hvAct"></div>
+ <div class="sec">١) رابط ملف مباشر (PDF / EPUB / DOCX / TXT…)</div><input id="iu" dir="ltr" placeholder="https://.../book.pdf"><div class="row"><input id="iun" placeholder="اسم الكتاب (اختياري)"><button class="btn" onclick="impUrl()">⬇️ سحب</button></div>
+ <div class="sec">٢) لصق نص أو كود صفحة</div><div class="row"><input id="ipn" placeholder="اسم الكتاب"></div><textarea id="ipt" rows="5" style="width:100%;border-radius:10px;border:1.5px solid var(--gray-2);padding:8px;font-family:inherit" placeholder="الصق هنا النص اللي نسخته من أي موقع"></textarea>
+ <div class="row"><button class="btn l" onclick="navigator.clipboard.readText().then(t=>{$('ipt').value=t}).catch(()=>out('المتصفح رفض قراءة الحافظة، الصق يدوي'))">📋 لصق من الحافظة</button><button class="btn" onclick="impPaste()">💾 حفظ</button></div>
+ <div class="sec">٣) زر نسخ الصفحة من متصفح الهاتف</div><p style="font-size:13px">اعمل بوكماركية في متصفحك وحط الكود ده مكان الرابط، وافتح أي صفحة كتاب واضغط عليها، وبعدها ارجع اللصق من الحافظة (٢).</p><input dir="ltr" readonly value="${esc(bm)}" onclick="this.select();navigator.clipboard&&navigator.clipboard.writeText(this.value)">
+ <div class="sec">٤) نزّل الملف بنفسك وارفعه</div><div class="row"><button class="btn l" onclick="const u=$('iu').value.trim();window.open(u||'https://shamela.ws/','_blank')">🔗 فتح الرابط في المتصفح</button><button class="btn" onclick="$('fileInput').click()">📂 رفع من الهاتف</button></div>
+ <div class="sec">٥) اختبار الاتصال</div><button class="btn l" onclick="impTest()">🧪 جرّب كل الطرق على الشاملة</button><div id="impT" style="font-size:13px;margin-top:8px;line-height:1.9"></div>`};
+window.impUrl=async()=>{const u=$('iu').value.trim();if(!/^https?:\/\//.test(u))return out('اكتب رابط صحيح يبدأ بـ https://');out('⏳ جارٍ السحب...',1);
+ try{const bl=await net(u,true);let ext=(new URL(u).pathname.match(/\.(\w{2,5})$/)||[])[1]||MT[bl.type.split(';')[0]]||'bin';const nm=$('iun').value.trim()||decodeURIComponent(new URL(u).pathname.split('/').pop().replace(/\.\w+$/,''))||'ملف';await saveBlob(nm,bl,ext.toLowerCase());out('✅ تم السحب والحفظ في مكتبتك',1)}catch(e){out('⚠ '+esc(e.message)+'<br>جرّب الطريقة ٤ (نزّل وارفع).')}};
+window.impPaste=async()=>{const t=$('ipt').value;if(!t.trim())return out('الصق نص الأول');const h=/<(html|body|div|p)[\s>]/i.test(t);await saveBlob($('ipn').value.trim()||'نص ملصوق',new Blob([t],{type:h?'text/html':'text/plain'}),h?'html':'txt');$('ipt').value='';out('✅ اتحفظ',1)};
+window.impTest=async()=>{const T=[['مباشر','https://shamela.ws/'],...(P.proxies||[]).filter(Boolean).map(t=>[new URL(t.replace('{url}','x')).host,t.includes('{url}')?t.replace('{url}',encodeURIComponent('https://shamela.ws/')):t+encodeURIComponent('https://shamela.ws/')])],o=$('impT');o.innerHTML='';
+ for(const [n,u] of T){const d=document.createElement('div');d.textContent='⏳ '+n;o.appendChild(d);try{const r=await fetch(u);d.textContent=(r.ok?'✅ ':'❌ ')+n+(r.ok?'':' (HTTP '+r.status+')')}catch(e){d.textContent='❌ '+n+' (محظور/غير متاح)'}}};
+
+window.olToc=()=>{const b=mk('tocOv','الفهرس',true);b.innerHTML=OL.toc.map(([t,n])=>`<div class="li" onclick="$('tocOv').classList.remove('open');olGo(0,${n})">${esc(t)}</div>`).join('')};
+window.olPdf=async()=>{showToast('⏳ جارٍ سحب الـ PDF...');try{const bl=await net(OL.pdf,true);await saveBlob(OL.name,bl,'pdf')}catch(e){showToast('تعذر سحب الـ PDF');console.log(e)}};
+window.olAll=async()=>{if(OL.busy){OL.stop=1;return}if(!OL.total)return showToast('عدد الصفحات غير معروف');
+ OL.busy=1;OL.stop=0;const T=OL.total;let n=0,nx=1,fail=0;const lab=()=>{const b=$('olAllBtn');if(b)b.textContent=OL.busy?`⏳ ${n}/${T} (اضغط للإيقاف والحفظ)`:'⬇️ تحميل الكتاب كامل'};
+ const w=async()=>{while(!OL.stop){const i=nx++;if(i>T)return;if(!OL.pages[i]){try{OL.pages[i]=pageText(parse(await net(`https://shamela.ws/book/${OL.id}/${i}`)))}catch(e){fail++;OL.pages[i]='[تعذر تحميل الصفحة '+i+']';if(fail>15)OL.stop=1}}n++;lab()}};
+ lab();await Promise.all([w(),w(),w(),w()]);OL.busy=0;lab();
+ if(fail>15)return showToast('فشل كتير، اتوقف. جرّب بروكسي تاني أو الطرق البديلة');await olSave()};
+
+const AK='mk_auto';let A=Object.assign({on:true,cats:[3],per:2,maxPages:400,mins:60,done:[]},JSON.parse(localStorage.getItem(AK)||'{}'));
+const saveA=()=>localStorage.setItem(AK,JSON.stringify(A));
+const totalOf=(id,d)=>{const r=new RegExp('/book/'+id+'/(\\d+)');let m=0;d.querySelectorAll('a[href]').forEach(a=>{const x=(a.getAttribute('href')||'').match(r);if(x)m=Math.max(m,+x[1])});return m};
+async function autoBook(id,name){const u=i=>`https://shamela.ws/book/${id}/${i}`,d=parse(await net(u(1))),T=totalOf(id,d);
+ if(T>A.maxPages)return false;const pg={1:pageText(d)};let nx=2,fail=0;
+ const w=async()=>{while(fail<=10){const i=nx++;if(i>T)return;try{pg[i]=pageText(parse(await net(u(i))))}catch(e){fail++}}};
+ await Promise.all([w(),w(),w(),w()]);if(fail>10)throw new Error('فشل السحب');
+ const txt=Object.keys(pg).map(Number).sort((a,b)=>a-b).map(k=>PGM(k,pg[k])).join('\n\n');await saveBlob(name,new Blob([txt],{type:'text/plain'}),'txt');return true}
+async function autoRun(force){if((!A.on&&!force)||autoRun.busy)return;autoRun.busy=1;let got=0;
+ try{for(const cat of A.cats){if(got>=A.per)break;const d=parse(await net('https://shamela.ws/category/'+cat)),L=[],seen={};
+  d.querySelectorAll('a[href]').forEach(a=>{const m=(a.getAttribute('href')||'').match(/\/book\/(\d+)$/),t=a.textContent.trim();if(m&&t&&!seen[m[1]]){seen[m[1]]=1;L.push([m[1],t])}});
+  for(const [id,t] of L){if(got>=A.per)break;if(A.done.includes(id))continue;showToast('⏳ سحب تلقائي: '+t);
+   try{const ok=await autoBook(id,t);A.done.push(id);saveA();if(ok)got++}catch(e){console.log('auto',e);break}}}
+  if(force)showToast(got?'✅ اتسحب '+got+' كتاب':'مفيش كتب جديدة أو الاتصال فشل')}catch(e){console.log('auto',e);if(force)showToast('⚠ فشل الاتصال، افتح 📥 سحب ملفات ← اختبار الاتصال')}
+ autoRun.busy=0}
+window.autoNow=()=>autoRun(true);window.setA=(k,v)=>{A[k]=v;saveA()};window.A_=A;
+setTimeout(()=>autoRun(),4000);setInterval(()=>autoRun(),Math.max(10,A.mins)*60000);
+
+const san=n=>String(n).replace(/[\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim().slice(0,80)||'كتاب';
+const hash=t=>{let h=0;for(const c of t)h=(h*31+c.charCodeAt(0))|0;return (h>>>0).toString(36)};
+const dl=(name,blob)=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000)};
+function ensureList(name){let l=customLists.find(x=>x.name===name);if(!l){l={id:'h'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name};customLists.push(l);localStorage.setItem('mk_lists',JSON.stringify(customLists))}return l}
+let HV=null;
+window.harvest=async()=>{const url=$('hu').value.trim();if(!/^https?:\/\//.test(url))return out('الصق رابط صفحة صحيح يبدأ بـ https://');
+ out('⏳ جارٍ فحص الصفحة...',1);$('hvAct').innerHTML='';
+ try{const d=parse(await net(url)),U=new URL(url),sh=/(^|\.)shamela\.ws$/.test(U.hostname),cl=t=>t.replace(/\s*[-–|]\s*المكتبة الشاملة.*$/,'').replace(/^كتاب\s+/,'').trim();
+  const pageTitle=cl(((d.querySelector('h1')||{}).textContent||d.title||U.hostname).trim())||U.hostname,items=[],seen={},sb=sh&&U.pathname.match(/^\/book\/(\d+)/);let head='';
+  if(sb){const c=d.querySelector('a[href*="/category/"]');items.push({key:'sh_'+sb[1],t:pageTitle,src:{kind:'shamela',id:sb[1]},head:c?c.textContent.trim():'متفرقات'})}
+  else d.querySelectorAll('h2,h3,h4,a[href]').forEach(e=>{if(e.tagName!=='A'){head=e.textContent.trim();return}
+   let h;try{h=new URL(e.getAttribute('href'),url)}catch(x){return}let key,src;
+   if(sh){const m=h.pathname.match(/^\/book\/(\d+)(?:\/\d+)?$/);if(!m)return;key='sh_'+m[1];src={kind:'shamela',id:m[1]}}
+   else if(/\.(pdf|epub|docx?|txt|xlsx?|azw3|mobi)$/i.test(h.pathname)){key='f_'+hash(h.href);src={kind:'file',url:h.href}}else return;
+   const t=e.textContent.trim().replace(/\s+/g,' ');if(seen[key]||t.length<2||/^[<>\d\s]+$/.test(t))return;seen[key]=1;items.push({key,t:cl(t),src,head})});
+  if(!items.length)return out('⚠ ما لقيتش كتب في الصفحة دي. جرّب رابط قسم أو كتاب من الشاملة، أو صفحة فيها روابط PDF / EPUB.');
+  if(!sb&&new Set(items.map(i=>i.head).filter(Boolean)).size<2)items.forEach(i=>i.head=pageTitle);
+  items.forEach(i=>{if(!i.head)i.head=pageTitle});
+  const cats={};let add=0,dup=0;HV={ids:[],stop:0};
+  for(const it of items){const l=ensureList(it.head);if(!(l.name in cats))cats[l.name]=0;HV.ids.push(it.key);
+   if(books.find(b=>b.id===it.key)){dup++;continue}
+   const rec={id:it.key,name:it.t,ext:'WEB',type:'online',size:'☁️ أونلاين',addedAt:Date.now(),dateStr:new Date().toLocaleDateString('ar-EG'),category:'custom_'+l.id,progress:0,src:it.src};
+   await dbPut('books',rec);books.unshift(rec);add++;cats[l.name]++}
+  renderCustomLists();renderBooks();
+  out(`✅ تم إضافة <b>${add}</b> كتاب${dup?` (و${dup} كانوا موجودين قبل كده)`:''}<br>في <b>${Object.keys(cats).length}</b> تصنيف:<br>`+Object.entries(cats).map(([n,c])=>`• ${esc(n)}: ${c} كتاب`).join('<br>'),1);
+  $('hvAct').innerHTML='<div class="row"><button class="btn" id="hvBtn" onclick="hvDlAll()">⬇️ تحميل الكل للمكتبة</button><button class="btn l" onclick="hvZip()">💾 حفظ الكل على الهاتف (ZIP)</button></div><p style="font-size:12px;opacity:.75">أو افتح أي كتاب من المكتبة واضغط ⋮ ← تحميل / حفظ على الهاتف.</p>';
+  $('impOv').querySelector('.ov-b').scrollTop=0
+ }catch(e){out('⚠ '+esc(e.message))}};
+async function shamelaBlob(id,prog){const u=i=>`https://shamela.ws/book/${id}/${i}`,d=parse(await net(u(1))),T=totalOf(id,d)||1,pg={1:pageText(d)};let nx=2,n=1,fail=0;
+ const w=async()=>{while(fail<=10){const i=nx++;if(i>T)return;try{pg[i]=pageText(parse(await net(u(i))))}catch(e){fail++}n++;prog&&prog(n,T)}};
+ await Promise.all([w(),w(),w(),w()]);if(fail>10)throw new Error('فشل السحب');
+ return new Blob([Object.keys(pg).map(Number).sort((a,b)=>a-b).map(k=>PGM(k,pg[k])).join('\n\n')],{type:'text/plain'})}
+window.dlBook=async(id,prog,quiet)=>{const b=books.find(x=>String(x.id)===String(id));if(!b||b.type!=='online')return;let bl,ext;
+ if(b.src.kind==='shamela'){bl=await shamelaBlob(b.src.id,prog);ext='txt'}
+ else{bl=await net(b.src.url,true);ext=((new URL(b.src.url).pathname.match(/\.(\w{2,5})$/)||[])[1]||MT[bl.type.split(';')[0]]||'bin').toLowerCase()}
+ await idbSave('file_'+b.id,{data:bl,type:ext});b.ext=ext;b.type=getType('x.'+ext);b.size=fmtSize(bl.size);await dbPut('books',b);if(!quiet)renderBooks()};
+window.hvDlAll=async()=>{if(!HV)return;const btn=$('hvBtn');if(HV.busy){HV.stop=1;return}HV.busy=1;HV.stop=0;let ok=0,bad=0;const todo=HV.ids.filter(i=>{const b=books.find(x=>x.id===i);return b&&b.type==='online'});
+ for(let k=0;k<todo.length&&!HV.stop;k++){const b=books.find(x=>x.id===todo[k]);if(btn)btn.textContent=`⏳ ${k+1}/${todo.length} (اضغط للإيقاف)`;
+  out(`⏳ بحمّل (${k+1}/${todo.length}): ${esc(b.name)}`,1);try{await dlBook(b.id,(n,T)=>{out(`⏳ (${k+1}/${todo.length}) ${esc(b.name)}: ${n}/${T}`,1)},1);ok++}catch(e){bad++}}
+ HV.busy=0;renderBooks();if(btn)btn.textContent='⬇️ تحميل الكل للمكتبة';out(`✅ اتحمّل ${ok} كتاب${bad?` وفشل ${bad}`:''}${HV.stop?' (اتوقف)':''}. دوس "حفظ الكل على الهاتف" لو عايز نسخة ZIP.`,!bad)};
+window.hvZip=async()=>{if(!HV)return;const z=new JSZip();let n=0;out('⏳ بجهّز الملف...',1);
+ for(const id of HV.ids){const b=books.find(x=>x.id===id);if(!b||b.type==='online')continue;const rec=await idbGet('file_'+id);if(!rec)continue;const l=customLists.find(x=>'custom_'+x.id===b.category);z.folder(san(l?l.name:'كتب')).file(san(b.name)+'.'+b.ext,rec.data);n++}
+ if(!n)return out('⚠ لسه ما حمّلتش كتب. دوس "تحميل الكل للمكتبة" الأول.');dl('كتب.zip',await z.generateAsync({type:'blob'}));out('💾 اتحفظ ملف ZIP فيه '+n+' كتاب في تنزيلات الهاتف',1)};
+window.saveToPhone=async id=>{const b=books.find(x=>String(x.id)===String(id));if(!b)return;
+ if(b.type==='online'){showToast('⏳ بحمّل الكتاب الأول...');try{await dlBook(b.id)}catch(e){return showToast('⚠ فشل التحميل')}}
+ const rec=await idbGet('file_'+b.id);if(!rec)return showToast('الملف غير موجود');dl(san(b.name)+'.'+b.ext,rec.data instanceof Blob?rec.data:new Blob([await getFileArrayBuffer(rec)]));showToast('💾 اتحفظ في تنزيلات الهاتف')};
+window.dlBookUI=async()=>{showToast('⏳ بحمّل...');try{await dlBook(activeBookId);showToast('✅ اتحمّل في المكتبة')}catch(e){showToast('⚠ فشل التحميل')}};
+window.openOnlineBook=async b=>{if(b.src.kind==='shamela'){readOnline({id:b.src.id,name:b.name,n:1});activeBookId=b.id}
+ else{showToast('⏳ بحمّل الملف...');try{await dlBook(b.id)}catch(e){return showToast('⚠ فشل التحميل')}openBook(b.id)}};
+window.olPhone=()=>{const ks=Object.keys(OL.pages).map(Number).sort((a,b)=>a-b);if(!ks.length)return;dl(san(OL.name)+'.txt',new Blob([ks.map(k=>OL.pages[k]).join('\n\n')],{type:'text/plain'}));showToast('💾 اتحفظ '+ks.length+' صفحة على الهاتف')};
+const _fb=window.filterBooks;window.filterBooks=function(c){_fb(c);if(String(c).startsWith('custom_')){const l=customLists.find(x=>'custom_'+x.id===c);if(l)$('sectionTitle').textContent=l.name}};
+const bm=document.querySelector('#bookMenuModal .modal-item');if(bm)bm.insertAdjacentHTML('beforebegin','<div class="modal-item" onclick="closeBookMenu();dlBookUI()"><span class="icon">⬇️</span> تحميل للمكتبة</div><div class="modal-item" onclick="closeBookMenu();saveToPhone(activeBookId)"><span class="icon">💾</span> حفظ على الهاتف</div>');
+renderCustomLists();
+// ---- القراءة الغامرة: ما يظهر غير الكتاب
+const RO=$('readerOverlay'),RC=$('readerContent');let ht;const arm=()=>{clearTimeout(ht);ht=setTimeout(()=>RO.classList.add('imm'),10000)};
+new MutationObserver(()=>{const o=RO.classList.contains('open');if(o&&!RO._o){RO._o=1;RO.classList.add('imm');try{if(RO.requestFullscreen&&!document.fullscreenElement)RO.requestFullscreen().catch(()=>{})}catch(e){}}if(!o)RO._o=0}).observe(RO,{attributes:true,attributeFilter:['class']});
+RC.addEventListener('click',e=>{if(mv||e.target.closest('button,a,input,select,textarea,label,video,audio')||String(getSelection()))return;RO.classList.toggle('imm');if(!RO.classList.contains('imm'))arm()});
+RO.querySelectorAll('.reader-topbar,.reader-toolbar,.reader-bottom').forEach(x=>['pointerdown','input','change'].forEach(v=>x.addEventListener(v,arm,{passive:true})));
+let sx=0,sy=0;RC.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+RC.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(OL&&OL.show&&OL.id&&Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*2)olGo(dx>0?1:-1)},{passive:true});
+
+// ---- إصلاح عارض PDF: احتواء بالعرض + تمرير حر + زر تدوير + إخفاء شريطه في الوضع الغامر
+window.renderPdfPage=function(n){if(!window._pdfDoc)return;
+ window._pdfDoc.getPage(n).then(function(page){
+  const cv=$('pdfCanvas'),wr=$('pdfViewerWrap');if(!cv||!wr)return;
+  const base=page.getViewport({scale:1});window._pdfBaseScale=Math.max(50,wr.clientWidth-20)/base.width;
+  const z=window._pdfZoom||1,key=n+'|'+z+'|'+wr.clientWidth;if(window._pdfKey===key)return;const same=window._pdfCurrentPage===n,ratio=same&&cv.height?wr.scrollTop/cv.height:0,vp=page.getViewport({scale:Math.max(.1,window._pdfBaseScale*z)});window._pdfKey=key;
+  try{if(window._pdfTask)window._pdfTask.cancel()}catch(e){}
+  cv.width=vp.width;cv.height=vp.height;cv.style.transform='none';
+  const ta=taOf(z);cv.style.touchAction=ta;wr.style.touchAction=ta;
+  window._pdfTask=page.render({canvasContext:cv.getContext('2d'),viewport:vp});window._pdfTask.promise.catch(()=>{});
+  const i=$('pdfPageInfo');if(i)i.textContent='صفحة '+n+' / '+window._pdfDoc.numPages;
+  const zv=$('pdfZoomVal');if(zv)zv.textContent=Math.round(z*100)+'%';
+  window._pdfCurrentPage=n;wr.scrollTop=same?ratio*vp.height:0})};
+new MutationObserver(()=>{const w=$('pdfViewerWrap'),l=w&&w.lastElementChild;if(w&&!w._drag){w._drag=1;window._pdfKey='';setupPdfDrag(w)}if(l&&l.style.position==='sticky')l.classList.add('pdfbar')}).observe(RC,{childList:true,subtree:true});
+RO.addEventListener('pointerdown',e=>{if(e.target.closest('.reader-topbar,.reader-toolbar,.reader-bottom,.pdfbar'))arm()},true);
+let px=0,py=0,mv=0;RC.addEventListener('pointerdown',e=>{px=e.clientX;py=e.clientY;mv=0},true);
+RC.addEventListener('pointermove',e=>{if(Math.abs(e.clientX-px)+Math.abs(e.clientY-py)>14)mv=1},true);
+const tb=document.querySelector('#readerOverlay .reader-topbar button[onclick="openBookMenu()"]');
+if(tb)tb.insertAdjacentHTML('beforebegin','<button class="btn-icon" onclick="toggleLandscape()" title="تدوير الشاشة">🔄</button>');
+
+const taOf=z=>P.glide?(z>1.05?'pan-x pan-y':'pan-y'):'none';
+window.pdfTA=()=>{const cv=$('pdfCanvas'),wr=$('pdfViewerWrap');if(!cv||!wr)return;const t=taOf(window._pdfZoom||1);cv.style.touchAction=t;wr.style.touchAction=t};
+function setupPdfDrag(wr){const ps=new Map();
+ wr.addEventListener('pointerdown',e=>ps.set(e.pointerId,{x:e.clientX,y:e.clientY}),true);
+ wr.addEventListener('pointermove',e=>{const p=ps.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;if(P.glide||ps.size!==1)return;wr.scrollTop-=dy;wr.scrollLeft-=dx},true);
+ ['pointerup','pointercancel'].forEach(t=>wr.addEventListener(t,e=>ps.delete(e.pointerId),true))}
+// ---- الإعدادات
+window.openSettings=function(){const b=mk('setOv','⚙️ الإعدادات',true);
+ b.innerHTML=`<div class="sec">ألوان الواجهة</div><div class="row">${Object.entries(THEMES).map(([k,v])=>`<div class="th ${P.theme===k?'sel':''}" style="background:${v}" onclick="setP('theme','${k}')"></div>`).join('')}</div>
+ <div class="row"><label>خلفية الصفحات</label><input type="color" value="${P.pageBg||'#fbf8e6'}" onchange="setP('pageBg',this.value)"><label>لون الشريط</label><input type="color" value="${P.head||'#5a9a3a'}" onchange="setP('head',this.value)"><button class="btn l" onclick="P_.pageBg='';P_.head='';setP('theme',P_.theme)">رجوع للأصل</button></div>
+ <div class="sec">القراءة</div><div class="row"><label>الخط</label><select onchange="setP('font',this.value,1)">${FONTS.map(f=>`<option value="${f[1].replace(/"/g,'&quot;')}" ${P.font===f[1]?'selected':''}>${f[0]}</option>`).join('')}</select></div>
+ <div class="row"><label>الحجم</label><input type="number" min="10" max="60" value="${P.size||fontSize}" onchange="setP('size',+this.value,1);fontSize=+this.value"></div>
+ <div class="row"><label>تباعد الأسطر</label><input type="number" step=".1" min="1.4" max="3" value="${P.lh}" onchange="setP('lh',+this.value,1)"></div>
+ <div class="row"><label>لون الخط</label><input type="color" value="${P.color}" onchange="setP('color',this.value,1)"><label>لون الخلفية</label><input type="color" value="${P.bg}" onchange="setP('bg',this.value,1)"></div>
+ <div class="row"><label>تمرير الـ PDF</label><input type="checkbox" style="width:24px;height:24px" ${P.glide?'checked':''} onchange="setP('glide',this.checked,1);pdfTA()"><span style="font-size:12px">شغّله لو عايز الانزلاق السريع (Fling). مقفول = الصفحة تقف مكان صباعك</span></div>
+ <div class="sec">الملفات</div><button class="btn" onclick="$('fileInput').click()">📂 إضافة ملفات من الهاتف (كل الصيغ)</button>
+ <div class="sec">السحب التلقائي من الشاملة</div>
+ <div class="row"><label>تشغيل</label><input type="checkbox" style="width:24px;height:24px" ${A.on?'checked':''} onchange="setA('on',this.checked)"><span style="font-size:12px">يسحب كتب جديدة لوحده عند فتح التطبيق وكل ساعة</span></div>
+ <div class="row"><label>الأقسام</label><select multiple size="6" onchange="setA('cats',[...this.selectedOptions].map(o=>+o.value))">${CATS.map((c,k)=>`<option value="${k+1}" ${A.cats.includes(k+1)?'selected':''}>${c}</option>`).join('')}</select></div>
+ <div class="row"><label>كتب كل مرة</label><input type="number" min="1" max="20" value="${A.per}" onchange="setA('per',+this.value)"><label>أقصى صفحات</label><input type="number" min="20" max="5000" value="${A.maxPages}" onchange="setA('maxPages',+this.value)"></div>
+ <div class="row"><button class="btn" onclick="autoNow()">▶️ اسحب دلوقتي</button><button class="btn l" onclick="A_.done.length=0;setA('x',0);showToast('اتصفّر السجل')">🗑 صفّر السجل (${A.done.length})</button></div>
+ <div class="sec">المصادر</div>${P.sources.map((s,i)=>`<div class="row"><span style="flex:1">${esc(s.name)}<br><small dir="ltr">${esc(s.url)}</small></span><button class="btn l" onclick="P_.sources.splice(${i},1);setP('x',0)">حذف</button></div>`).join('')}
+ <div class="row"><input id="sn" placeholder="اسم الموقع"><input id="su" dir="ltr" placeholder="https://..."><button class="btn" onclick="addSrc()">➕ إضافة</button></div>
+ <div class="sec">بروكسيات الاتصال (واحد في كل سطر، بتتجرب بالترتيب)</div><textarea dir="ltr" rows="5" style="width:100%;border-radius:10px;border:1.5px solid var(--gray-2);padding:8px" onchange="setP('proxies',this.value.split('\n').map(x=>x.trim()).filter(Boolean),1)">${esc((P.proxies||[]).join('\n'))}</textarea><button class="btn l" style="margin-top:6px" onclick="openImport()">📥 سحب ملفات واختبار الاتصال</button><p style="font-size:12px;opacity:.7;margin-top:6px">{url} مكان الرابط. امسحهم كلهم لو مش عايز طلباتك تعدي على خدمات خارجية.</p>`};
+window.$=$;window.P_=P;
+window.setP=(k,v,noRe)=>{if(k!=='x')P[k]=v;save();applyTheme();applyPrefs();if(!noRe){const s=$('setOv').querySelector('.ov-b').scrollTop;openSettings();$('setOv').querySelector('.ov-b').scrollTop=s}};
+window.addSrc=()=>{const n=$('sn').value.trim(),u=$('su').value.trim();if(!n||!/^https?:\/\//.test(u))return showToast('اكتب الاسم ورابط يبدأ بـ https://');P.sources.push({name:n,url:u});setP('x',0)};
+// ---- حقن عناصر الواجهة
+const ta=document.querySelector('.topbar-actions');if(ta)ta.insertAdjacentHTML('afterbegin','<button class="btn-icon" onclick="openSources()" title="المصادر">🌐</button><button class="btn-icon" onclick="openSettings()" title="الإعدادات">⚙️</button>');
+const sc=document.querySelector('.sidebar-scroll');if(sc)sc.insertAdjacentHTML('afterbegin','<div class="sidebar-section"><span class="sidebar-label">المصادر</span><div class="sidebar-item" onclick="closeSidebar();openSources()"><span class="icon">🌐</span> تصفح المصادر</div><div class="sidebar-item" onclick="closeSidebar();openSettings()"><span class="icon">⚙️</span> الإعدادات</div><div class="sidebar-item" onclick="closeSidebar();openImport()"><span class="icon">📥</span> سحب ملفات</div></div>');
+const sel=document.querySelector('#readerToolbar select');if(sel){sel.innerHTML=FONTS.map(f=>`<option value="${f[1].replace(/"/g,'&quot;')}">${f[0]}</option>`).join('');sel.value=P.font}
+$('readerToolbar').insertAdjacentHTML('beforeend','<div class="toolbar-sep"></div><input type="color" title="لون الخط" value="'+P.color+'" oninput="chgTextColor(this.value)" style="width:34px;height:30px;padding:0;border:0"><input type="color" title="لون الخلفية" value="'+P.bg+'" oninput="chgBg(this.value)" style="width:34px;height:30px;padding:0;border:0"><button class="font-sz-btn" onclick="chgLH(.2)">↕</button><button class="font-sz-btn" style="width:auto;padding:0 10px" onclick="toggleLandscape()">🔄 أفقي</button>');
+})();
+</script>
+<script>
+(function(){
+const $=id=>document.getElementById(id),RO=$('readerOverlay'),RC=$('readerContent');
+const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let LP={};try{LP=JSON.parse(localStorage.getItem('mk_lastpos')||'{}')}catch(e){}
+let curId=null,armAt=Infinity,pend=null,pgEls=[],hits=[],hi=-1,tok=0,tm=0,raf=0,pc={doc:null,n:{}};
+const hl=()=>window.CSS&&CSS.highlights&&window.Highlight;
+// ---------- حفظ موضع كل كتاب لوحده ----------
+const setLP=(id,o,pct)=>{try{o.at=Date.now();LP[id]=o;localStorage.setItem('mk_lastpos',JSON.stringify(LP));
+ if(pct!=null){positions[id]=pct;localStorage.setItem('mk_pos',JSON.stringify(positions));const b=books.find(x=>String(x.id)===String(id));if(b)b.progress=pct}}catch(e){}};
+const kind=()=>{if(!RO.classList.contains('open'))return'';const o=window.getOL&&getOL();if(o&&o.show)return'online';
+ if(RC.querySelector('#pdfViewerWrap')&&window._pdfDoc)return'pdf';if(RC.dataset.raw)return'';return curId?'text':''};
+const AR=/[\u064B-\u065F\u0670\u0640]/;
+function nrm(s){let t='';const m=[];for(let i=0;i<s.length;i++){const c=s[i];if(AR.test(c))continue;
+ t+=(c==='أ'||c==='إ'||c==='آ'||c==='ٱ')?'ا':c==='ى'?'ي':c==='ة'?'ه':c.toLowerCase();m.push(i)}return{t,m}}
+function pgInfo(){const st=RC.scrollTop;if(pgEls.length){let lo=0,h=pgEls.length-1,a=-1;
+ while(lo<=h){const mid=(lo+h)>>1;if(pgEls[mid].offsetTop<=st+8){a=mid;lo=mid+1}else h=mid-1}
+ return{p:+pgEls[a<0?0:a].dataset.pg,t:+pgEls[pgEls.length-1].dataset.pg}}
+ const H=RC.clientHeight||1;return{p:Math.floor(st/H)+1,t:Math.max(1,Math.ceil(RC.scrollHeight/H))}}
+const markPages=()=>{pgEls=[];RC.querySelectorAll('p').forEach(p=>{const t=p.textContent;
+ if(t.length<18&&t.charCodeAt(0)===0x3014){const m=/^〔صفحة (\d+)〕$/.exec(t.trim());if(m){p.dataset.pg=m[1];p.className='pgm';pgEls.push(p)}}})};
+const updProg=()=>{if(kind()!=='text')return;const i=pgInfo(),mx=RC.scrollHeight-RC.clientHeight,r=mx>0?RC.scrollTop/mx:0;
+ setTimeout(()=>{$('readerProg').textContent='صفحة '+i.p+' / '+i.t+' · '+Math.round(r*100)+'٪'},0)};
+function flush(){if(Date.now()<armAt||!curId)return;const k=kind();
+ if(k==='text'){const i=pgInfo(),mx=RC.scrollHeight-RC.clientHeight,r=mx>0?RC.scrollTop/mx:0;setLP(curId,{kind:'scroll',r:+r.toFixed(5),p:i.p,t:i.t},Math.round(r*100))}
+ else if(k==='pdf'){const w=$('pdfViewerWrap'),c=$('pdfCanvas'),np=window._pdfDoc.numPages,p=window._pdfCurrentPage||1;
+  setLP(curId,{kind:'pdf',page:p,y:c&&c.height?+(w.scrollTop/c.height).toFixed(4):0,np},Math.round(p/np*100))}}
+const sched=()=>{clearTimeout(tm);tm=setTimeout(flush,300)};
+document.addEventListener('scroll',e=>{const t=e.target;if(t===RC){if(kind()==='text'){cancelAnimationFrame(raf);raf=requestAnimationFrame(updProg);sched()}}
+ else if(t&&t.id==='pdfViewerWrap')sched()},true);
+['touchstart','pointerdown','wheel','keydown'].forEach(v=>document.addEventListener(v,()=>{if(armAt!==Infinity)armAt=0},{capture:true,passive:true}));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flush()});addEventListener('pagehide',flush);
+// فتح الكتاب: استرجاع آخر موضع
+const _ob=window.openBook;
+window.openBook=async function(id){const b=books.find(x=>String(x.id)===String(id));closeRS();clearHL();
+ if(!b||b.type==='online'){curId=null;return _ob(id)}
+ curId=String(b.id);armAt=Infinity;const s=LP[b.id],old=positions[b.id];positions[b.id]=0;pend=(b.type==='pdf'&&s&&s.kind==='pdf')?s:null;
+ await _ob(id);if(old)positions[b.id]=old;armAt=Date.now()+1800;
+ if(b.type!=='pdf'&&!RC.dataset.raw){markPages();
+  const run=()=>{if(!s||s.kind!=='scroll'||Date.now()>=armAt)return;const mx=RC.scrollHeight-RC.clientHeight;if(mx>0)RC.scrollTop=s.r*mx;updProg()};
+  run();setTimeout(run,500);setTimeout(run,1300);updProg();
+  if(s&&s.kind==='scroll'&&s.r>0)showToast('📖 كمّلت من آخر موضع (صفحة '+s.p+') — اضغط ⏮ للبدء من الأول')}};
+const _rp=window.renderPdfPage;
+window.renderPdfPage=function(n){const d=window._pdfDoc;
+ if(pend&&d){const s=pend;pend=null;n=Math.min(Math.max(1,s.page||1),d.numPages);
+  if(s.y)setTimeout(()=>{const w=$('pdfViewerWrap'),c=$('pdfCanvas');if(w&&c)w.scrollTop=s.y*c.height},400);
+  if(n>1)showToast('📖 كمّلت من صفحة '+n+' — اضغط ⏮ للبدء من الأول')}
+ _rp(n);if(curId&&d)setLP(curId,{kind:'pdf',page:n,y:0,np:d.numPages},Math.round(n/d.numPages*100))};
+const _ro=window.readOnline;
+window.readOnline=function(o){curId=null;if(o&&o.id){if(!o.pages){const s=LP['sh_'+o.id];
+ if(s&&s.kind==='online'&&s.n>1){o.n=s.n;showToast('📖 كمّلت من صفحة '+s.n+' — اضغط ⏮ للبدء من الأول')}}
+ setLP('sh_'+o.id,{kind:'online',n:o.n||1})}return _ro(o)};
+const _cr=window.closeReader;
+window.closeReader=function(){flush();armAt=Infinity;closeRS();clearHL();curId=null;return _cr()};
+const _rb=window.renderBooks;
+window.renderBooks=function(){_rb();document.querySelectorAll('#booksGrid .book-card').forEach(c=>{
+ const m=/openBook\('([^']+)'/.exec(c.getAttribute('onclick')||''),s=m&&LP[m[1]];if(!s)return;
+ const l=c.querySelector('.progress-label'),f=c.querySelector('.progress-fill');if(!l)return;
+ if(s.kind==='pdf'){l.textContent='آخر موضع: صفحة '+s.page+(s.np?' / '+s.np:'');if(f&&s.np)f.style.width=Math.round(s.page/s.np*100)+'%'}
+ else if(s.kind==='scroll'){l.textContent='آخر موضع: صفحة '+s.p+' / '+s.t;if(f)f.style.width=Math.round(s.r*100)+'%'}
+ else if(s.kind==='online')l.textContent='آخر موضع: صفحة '+s.n})};
+window.rsRestart=()=>{const k=kind();
+ if(k==='online')olGo(0,1);
+ else if(k==='pdf'){window._pdfZoom=1;renderPdfPage(1)}
+ else if(k==='text'){RC.scrollTop=0;if(curId)setLP(curId,{kind:'scroll',r:0,p:1,t:pgInfo().t},0)}
+ else return;showToast('⏮ رجعت لأول الكتاب')};
+// ---------- البحث والذهاب لصفحة ----------
+const rng=h=>{const r=document.createRange();r.setStart(h.n,h.s);r.setEnd(h.n,h.e);return r};
+function clearHL(){hits=[];hi=-1;try{CSS.highlights.delete('rs-all');CSS.highlights.delete('rs-cur')}catch(e){}const n=$('rsN');if(n)n.style.display='none'}
+function showHit(i){if(!hits.length)return;hi=(i+hits.length)%hits.length;const h=hits[hi],r=rng(h);
+ if(hl())CSS.highlights.set('rs-cur',new Highlight(r));else{const s=getSelection();s.removeAllRanges();s.addRange(r)}
+ h.n.parentElement.scrollIntoView({block:'center'});$('rsC').textContent=(hi+1)+' / '+hits.length;$('rsN').style.display='flex';$('rsL').style.display='none'}
+window.rsOpen=showHit;window.rsStep=d=>showHit(hi+d);
+window.rsList=()=>{const l=$('rsL');l.style.display=l.style.display==='none'?'block':'none'};
+window.openRS=()=>{$('rsP').style.display='block';RO.classList.remove('imm');$('rsQ').focus()};
+function closeRS(){const p=$('rsP');if(p)p.style.display='none'}window.closeRS=closeRS;
+window.rsJump=p=>{closeRS();if(kind()==='pdf'){window._pdfZoom=1;renderPdfPage(p)}else olGo(0,p)};
+const snip=(o,f,ql)=>{const st=o.m[f],en=o.m[f+ql-1]+1,a=Math.max(0,st-35),b=Math.min(o.s.length,en+45);
+ return(a?'…':'')+E(o.s.slice(a,st))+'<b>'+E(o.s.slice(st,en))+'</b>'+E(o.s.slice(en,b))+(b<o.s.length?'…':'')};
+const rows=(R,ql)=>R.slice(0,300).map(r=>'<div class="rsi" onclick="rsJump('+r.p+')"><small>ص '+r.p+(r.c>1?' ×'+r.c:'')+'</small>'+snip(r.o,r.f,ql)+'</div>').join('');
+const scan=(o,qn,p,R)=>{let i=0,c=0,f=-1;while((i=o.t.indexOf(qn,i))>-1){if(f<0)f=i;c++;i+=qn.length}if(c)R.push({p,c,f,o})};
+window.rsFind=async()=>{const q=$('rsQ').value.trim();if(!q)return;clearHL();const L=$('rsL'),S=$('rsS');L.innerHTML='';L.style.display='block';
+ const k=kind(),my=++tok,qn=nrm(q).t;if(!qn||!k){S.textContent='افتح كتاب الأول';return}
+ if(k==='text'){S.textContent='⏳ جارٍ البحث...';await new Promise(r=>setTimeout(r,30));
+  const w=document.createTreeWalker(RC,NodeFilter.SHOW_TEXT);let n,pg=0;
+  while((n=w.nextNode())&&hits.length<3000){const p=n.parentElement;if(p&&p.dataset&&p.dataset.pg){pg=+p.dataset.pg;continue}
+   const o=nrm(n.data);let i=0;while((i=o.t.indexOf(qn,i))>-1&&hits.length<3000){hits.push({n,s:o.m[i],e:o.m[i+qn.length-1]+1,pg});i+=qn.length}}
+  if(!hits.length){S.textContent='مفيش نتائج لـ "'+q+'"';return}
+  S.textContent=hits.length+(hits.length>=3000?'+':'')+' نتيجة';const cb=RC.getBoundingClientRect().top;
+  L.innerHTML=hits.slice(0,150).map((h,i)=>{const d=h.n.data,a=Math.max(0,h.s-35),b=Math.min(d.length,h.e+45);let lab;
+   if(h.pg)lab='ص '+h.pg;else lab=Math.round((h.n.parentElement.getBoundingClientRect().top-cb+RC.scrollTop)/RC.scrollHeight*100)+'٪';
+   return'<div class="rsi" onclick="rsOpen('+i+')"><small>'+lab+'</small>'+(a?'…':'')+E(d.slice(a,h.s))+'<b>'+E(d.slice(h.s,h.e))+'</b>'+E(d.slice(h.e,b))+(b<d.length?'…':'')+'</div>'}).join('');
+  if(hl())CSS.highlights.set('rs-all',new Highlight(...hits.map(rng)));return}
+ const R=[];
+ if(k==='pdf'){const d=window._pdfDoc;if(pc.doc!==d)pc={doc:d,n:{}};let tot=0;
+  for(let p=1;p<=d.numPages;p++){if(tok!==my)return;let o=pc.n[p];
+   if(!o){const pg=await d.getPage(p),tc=await pg.getTextContent(),s=tc.items.map(x=>x.str).join(' ');o=pc.n[p]=Object.assign({s},nrm(s))}
+   tot+=o.t.length;scan(o,qn,p,R);if(p%8===0||p===d.numPages)S.textContent='⏳ '+p+'/'+d.numPages+' · '+R.length+' صفحة فيها نتائج'}
+  if(!tot){S.textContent='الـPDF ده صور (مفيهوش نص) فمينفعش البحث جواه';return}}
+ else{const o=getOL(),ks=Object.keys(o.pages).map(Number).sort((a,b)=>a-b);
+  ks.forEach(p=>{const s=o.pages[p];scan(Object.assign({s},nrm(s)),qn,p,R)});
+  S.textContent='بيبحث في '+ks.length+' صفحة محمّلة بس — حمّل الكتاب للمكتبة للبحث الكامل'}
+ if(!R.length){if(k!=='online')S.textContent='مفيش نتائج لـ "'+q+'"';else S.textContent+=' · مفيش نتائج';return}
+ S.textContent=R.length+' صفحة فيها "'+q+'"'+(k==='online'?' (في الصفحات المحمّلة)':'');L.innerHTML=rows(R,qn.length)};
+window.rsGo=()=>{const n=parseInt(($('rsQ').value||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)),10),S=$('rsS'),k=kind();
+ if(!n){S.textContent='اكتب رقم الصفحة';return}
+ if(k==='pdf'){const t=window._pdfDoc.numPages;if(n>t){S.textContent='الكتاب '+t+' صفحة بس';return}window._pdfZoom=1;renderPdfPage(n);closeRS()}
+ else if(k==='online'){olGo(0,n);closeRS()}
+ else if(k==='text'){if(pgEls.length){RC.scrollTop=(pgEls.find(e=>+e.dataset.pg>=n)||pgEls[pgEls.length-1]).offsetTop-8}
+  else{const t=Math.max(1,Math.ceil(RC.scrollHeight/RC.clientHeight));RC.scrollTop=(Math.min(n,t)-1)*RC.clientHeight;showToast('الكتاب ده مفيهوش أرقام صفحات؛ الصفحة = شاشة (من '+t+')')}closeRS()}};
+// ---------- حفظ الملف جوه التطبيق (نسخة حقيقية مش مرجع للملف الأصلي) ----------
+window.toStoredBlob=async f=>{try{if(f.size>150*1048576)return f.slice(0,f.size,f.type);return new Blob([await f.arrayBuffer()],{type:f.type})}catch(e){return f}};
+window.PGM=(n,t)=>'〔صفحة '+n+'〕\n'+t;
+// ---------- الواجهة ----------
+RO.insertAdjacentHTML('beforeend','<div id="rsP" style="display:none;position:absolute;top:calc(56px + env(safe-area-inset-top,0px));left:0;right:0;z-index:7;background:#fff;color:#222;box-shadow:0 4px 18px #0005;padding:10px;max-height:65%;overflow:auto;direction:rtl;font-family:Tajawal,sans-serif">'
+ +'<div class="rsr"><input id="rsQ" placeholder="كلمة للبحث أو رقم صفحة" enterkeyhint="search" onkeydown="if(event.key===\'Enter\')rsFind()"><button onclick="rsFind()">🔎 بحث</button><button onclick="rsGo()">📄 صفحة</button><button onclick="closeRS()" style="background:#777">✕</button></div>'
+ +'<div id="rsS" style="font-size:13px;margin:8px 0;color:#555"></div>'
+ +'<div id="rsN" class="rsr" style="display:none;align-items:center;justify-content:space-between;margin:6px 0"><button onclick="rsStep(-1)">▶ السابق</button><b id="rsC"></b><button onclick="rsStep(1)">التالي ◀</button><button onclick="rsList()" style="background:#777">☰</button></div>'
+ +'<div id="rsL"></div></div>');
+document.head.insertAdjacentHTML('beforeend','<style>::highlight(rs-all){background:#ffe34d;color:#000}::highlight(rs-cur){background:#ff8f00;color:#000}'
+ +'.pgm{text-align:center;font-size:12px;opacity:.55;border-top:1px dashed currentColor;padding-top:6px;margin:18px 0 8px!important}'
+ +'#rsP button{padding:7px 11px;border:0;border-radius:8px;background:#1565c0;color:#fff;font-family:inherit;font-weight:700;white-space:nowrap}'
+ +'#rsP input{flex:1;min-width:0;padding:8px;border:1.5px solid #bbb;border-radius:8px;font-family:inherit;font-size:15px}'
+ +'.rsr{display:flex;gap:6px}.rsi{padding:9px 6px;border-bottom:1px solid #ddd;font-size:14px;line-height:1.8}.rsi small{color:#1565c0;font-weight:700;margin-left:8px}.rsi b{background:#ffe34d}</style>');
+const mb=document.querySelector('#readerOverlay .reader-topbar button[onclick="openBookMenu()"]');
+if(mb)mb.insertAdjacentHTML('beforebegin','<button class="btn-icon" onclick="openRS()" title="بحث">🔍</button><button class="btn-icon" onclick="rsRestart()" title="ابدأ من الأول">⏮</button>');
+})();
+</script>
+</body>
+</html>
